@@ -1,10 +1,10 @@
 define([
+    'jquery',
     'bluebird',
-    'kb_widget_userProfile_base', 
-    'kb.service.user_profile', 
-    'kb.runtime'
+    'kb_userProfile_widget_base', 
+    'kb/service/client/userProfile'
 ],
-    function (Promise, SocialWidget, UserProfileService, R) {
+    function ($, Promise, SocialWidget, UserProfileService) {
         "use strict";
         var widget = Object.create(SocialWidget, {
             init: {
@@ -25,10 +25,10 @@ define([
             setup: {
                 value: function () {
                     // User profile service
-                    if (R.isLoggedIn()) {
-                        if (R.hasConfig('services.user_profile.url')) {
-                            this.userProfileClient = new UserProfileService(R.getConfig('user_profile_url'), {
-                                token: R.getAuthToken()
+                    if (this.runtime.service('session').isLoggedIn()) {
+                        if (this.runtime.hasConfig('services.user_profile.url')) {
+                            this.userProfileClient = new UserProfileService(this.runtime.config('services.user_profile.url'), {
+                                token: this.runtime.service('session').getAuthToken()
                             });
                         } else {
                             throw 'The user profile client url is not defined';
@@ -46,7 +46,7 @@ define([
                     };
 
                     // Only enable the search form if the user is logged in.
-                    if (R.isLoggedIn()) {
+                    if (this.runtime.service('session').isLoggedIn()) {
                         var widget = this;
                         this.container.find('[data-field="search_text"] input').on('keyup', function (e) {
                             if ((e.key === undefined && e.keyCode === 27) || e.key === 'Esc' || e.key === 'Escape') {
@@ -73,7 +73,6 @@ define([
                                                 return 0;
                                             }
                                         });
-                                        console.log(users);
                                         widget.setState('searchResults', users);
                                     })
                                     .catch(function (err) {

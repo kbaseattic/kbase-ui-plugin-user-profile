@@ -1,8 +1,8 @@
 {
-    "name": "kbase-ui-plugin-MY_PLUGIN",
+    "name": "kbase-ui-plugin-user-profile",
     "version": "0.0.1",
     "keywords": ["kbase", "plugin"],
-    "author": "PLUGIN AUTHOR",
+    "author": "Erik Pearson",
     "contributors": [],
     "dependencies": {}
 }

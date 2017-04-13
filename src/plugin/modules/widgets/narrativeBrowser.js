@@ -1,13 +1,12 @@
+/*global define */
+/*jslint white: true */
 define([
-    'jquery',
-    'kb.utils',
-    'kb_widget_userProfile_base',
-    'kb.service.workspace',
-    'kb.runtime',
-    'bluebird'
+    'bluebird',
+    'kb_userProfile_widget_base',
+    'kb/service/client/workspace'
 ],
-    function ($, Utils, SocialWidget, WorkspaceService, R, Promise) {
-        "use strict";
+    function (Promise, SocialWidget, WorkspaceService) {
+        'use strict';
         var Widget = Object.create(SocialWidget, {
             init: {
                 value: function (cfg) {
@@ -30,10 +29,10 @@ define([
             // Rebuild the widget.
             setup: {
                 value: function () {
-                    if (R.isLoggedIn()) {
-                        if (R.hasConfig('services.workspace.url')) {
-                            this.workspaceClient = new WorkspaceService(R.getConfig('services.workspace.url'), {
-                                token: R.getAuthToken()
+                    if (this.runtime.service('session').isLoggedIn()) {
+                        if (this.runtime.hasConfig('services.workspace.url')) {
+                            this.workspaceClient = new WorkspaceService(this.runtime.getConfig('services.workspace.url'), {
+                                token: this.runtime.service('session').getAuthToken()
                             });
                         } else {
                             throw new Error('The workspace client url is not defined');
@@ -57,7 +56,7 @@ define([
                     // Head off at the pass -- if not logged in, can't show profile.
                     if (this.error) {
                         this.renderError();
-                    } else if (R.isLoggedIn()) {
+                    } else if (this.runtime.service('session').isLoggedIn()) {
                         this.places.title.html(this.renderTemplate('authorized_title'));
                         this.places.content.html(this.renderTemplate('authorized'));
                     } else {
@@ -70,10 +69,9 @@ define([
             },
             setInitialState: {
                 value: function (options) {                    
-                    return new Promise(function (resolve, reject) {
+                    return Promise.try(function () {
                         // We only run any queries if the session is authenticated.
-                        if (!R.isLoggedIn()) {
-                            resolve();
+                        if (!this.runtime.service('session').isLoggedIn()) {
                             return;
                         }
 
@@ -83,19 +81,19 @@ define([
                         // At present we can just use the presence of "narrative_nice_name" metadata attribute 
                         // to flag a compatible workspace.
                         //
-                        Promise.resolve(this.workspaceClient.list_workspace_info({
+                        return Promise.resolve(this.workspaceClient.list_workspace_info({
                             showDeleted: 0,
                             owners: [this.params.userId]
                         }))
                             .then(function (data) {
-                                var narratives = [];
+                                var narratives = [], i, wsInfo;
                                 // First we both transform each ws info object into a nicer js object,
                                 // and filter for modern narrative workspaces.
-                                for (var i = 0; i < data.length; i++) {
+                                for (i = 0; i < data.length; i += 1) {
                                     //tuple<ws_id id, ws_name workspace, username owner, timestamp moddate,
                                     //int object, permission user_permission, permission globalread,
                                     //lock_status lockstat, usermeta metadata> workspace_info
-                                    var wsInfo = this.workspace_metadata_to_object(data[i]);
+                                    wsInfo = this.workspace_metadata_to_object(data[i]);
 
                                     // make sure a modern narrative.
                                     if (wsInfo.metadata.narrative && wsInfo.metadata.is_temporary !== 'true') {
@@ -110,19 +108,15 @@ define([
                                 // We should now have the list of recently active narratives.
                                 // Now we sort and limit the list.
                                 narratives.sort(function (a, b) {
-                                    var x = new Date(a.moddate);
-                                    var y = new Date(b.moddate);
+                                    var x = new Date(a.moddate),
+                                        y = new Date(b.moddate);
                                     return ((x < y) ? 1 : ((x > y) ? -1 : 0));
                                 });
                                 this.setState('narratives', narratives);
-                                resolve();
-                            }.bind(this))
-                            .catch(function (err) {
-                                reject(err);
-                            });
-
-                    }
-                });
+                                return null;
+                            }.bind(this));
+                    }.bind(this));
+                }
             }
         });
 
