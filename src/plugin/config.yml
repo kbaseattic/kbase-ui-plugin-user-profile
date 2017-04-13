@@ -2,10 +2,10 @@
 ---
 package:
     author: Erik Pearson
-    name: userprofile
+    name: user-profile
     description: The user profile panel and associated widgets
     date: August 5, 2015
-    version: 0.0.1
+    version: 1.0.0
 source:
     ## sources are relative to build/plugins/PACKAGE/source/javascript
     ## NB: need to quote file names, otherwise 
