@@ -3,9 +3,9 @@ define([
     'jquery',
     'bluebird',
     'kb_common/utils',
-    'kb_userProfile_widget_base',
-    'kb/service/userProfile'
-], function(
+    './userProfileBase',
+    'kb_service/userProfile'
+], function (
     nunjucks,
     $,
     Promise,
@@ -13,10 +13,10 @@ define([
     SocialWidget,
     UserProfile
 ) {
-    "use strict";
+    'use strict';
     var UserProfileWidget = Object.create(SocialWidget, {
         init: {
-            value: function(cfg) {
+            value: function (cfg) {
                 cfg.name = 'UserProfile';
                 cfg.title = 'User Profile';
                 this.SocialWidget_init(cfg);
@@ -35,19 +35,19 @@ define([
                  We cannot use auto-escaping due to the need to filter some fields before output.
                  E.g. to insert line breaks, perform simple markup.
                  */
-                this.templates.env.addFilter('roleLabel', function(role) {
+                this.templates.env.addFilter('roleLabel', function (role) {
                     if (this.listMaps['userRoles'][role]) {
                         return this.listMaps['userRoles'][role].label;
                     }
                     return role;
                 }.bind(this));
-                this.templates.env.addFilter('userClassLabel', function(userClass) {
+                this.templates.env.addFilter('userClassLabel', function (userClass) {
                     if (this.listMaps['userClasses'][userClass]) {
                         return this.listMaps['userClasses'][userClass].label;
                     }
                     return userClass;
                 }.bind(this));
-                this.templates.env.addFilter('titleLabel', function(title) {
+                this.templates.env.addFilter('titleLabel', function (title) {
                     if (this.listMaps['userTitles'][title]) {
                         return this.listMaps['userTitles'][title].label;
                     }
@@ -57,37 +57,37 @@ define([
             }
         },
         setup: {
-            value: function() {
+            value: function () {
                 return null;
             }
         },
         go: {
-            value: function() {
+            value: function () {
                 // Show the user we are doing something, since we are about to launch a 
                 // query for profile data.
                 var widget = this;
                 this.setupUI();
                 this.renderWaitingView();
                 this.setInitialState()
-                    .then(function() {
+                    .then(function () {
                         return widget.refresh();
                     })
-                    .then(function() {
-                        widget.runtime.recv('profile', 'loaded', function(profile) {
+                    .then(function () {
+                        widget.runtime.recv('profile', 'loaded', function (profile) {
                             widget.userProfile = profile;
                             // widget.runtime.send('ui', 'alert', 'Hey, new profile loaded');
                             // alert('hey, new profile loaded');
                             widget.refresh();
                         });
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         widget.renderErrorView(err);
                     });
                 return this;
             }
         },
         resetState: {
-            value: function() {
+            value: function () {
                 this.userProfile = null;
             }
         },
@@ -95,8 +95,8 @@ define([
          getCurrentState 
          */
         setInitialState: {
-            value: function(options) {
-                return new Promise(function(resolve, reject, notify) {
+            value: function () {
+                return new Promise(function (resolve, reject) {
                     if (!this.runtime.service('session').isLoggedIn()) {
                         // We don't even try to get the profile if the user isn't 
                         // logged in.
@@ -108,10 +108,10 @@ define([
                             username: this.params.userId
                         });
                         this.userProfile.loadProfile()
-                            .then(function() {
+                            .then(function () {
                                 resolve();
                             })
-                            .catch(function(err) {
+                            .catch(function (err) {
                                 reject(err);
                             });
                     }
@@ -119,7 +119,7 @@ define([
             }
         },
         createTemplateContext: {
-            value: function() {
+            value: function () {
                 // NB: the guard for userProfile presence below is only necessary
                 // because there is a problem with widget startup -- in which a refresh
                 // can be issued by setting a param, config, state, and the profile will
@@ -147,7 +147,7 @@ define([
             }
         },
         calcProfileCompletion: {
-            value: function() {
+            value: function () {
                 if (this.runtime.service('session').isLoggedIn()) {
                     var completion = this.userProfile.calcProfileCompletion();
                     var lastSave = this.userProfile.nthHistory(1);
@@ -162,7 +162,7 @@ define([
             }
         },
         formToObject: {
-            value: function(schema) {
+            value: function (schema) {
                 // walk the schema, building an object out of any form values 
                 // that we find.
                 var that = this;
@@ -171,7 +171,7 @@ define([
                 var objectValidationErrors = [];
                 var parser = Object.create({}, {
                     init: {
-                        value: function(cfg) {
+                        value: function (cfg) {
                             if (typeof cfg.container === 'string') {
                                 this.container = $(cfg.container);
                             } else {
@@ -186,7 +186,7 @@ define([
                         }
                     },
                     getFieldValue: {
-                        value: function(name) {
+                        value: function (name) {
                             // Each form control is marked with a data-field attribute on a container element, with the name set to the 
                             // property path on the data object. The actual form control is found inisde the container.
                             var field = this.container.find('[data-field="' + name + '"]');
@@ -200,60 +200,60 @@ define([
                                 return undefined;
                             }
                             switch (control.prop('tagName').toLowerCase()) {
-                                case 'input':
-                                    switch (control.attr('type')) {
-                                        case 'checkbox':
-                                            return control.map(function() {
-                                                var $el = $(this);
-                                                if ($el.prop('checked')) {
-                                                    return $el.val();
-                                                } else {
-                                                    return null;
-                                                }
-                                            }).get();
-                                        case 'radio':
-                                            var value = control.map(function() {
-                                                var $el = $(this);
-                                                if ($el.prop('checked')) {
-                                                    return $el.val();
-                                                } else {
-                                                    return null;
-                                                }
-                                            }).get();
-                                            if (value.length === 1) {
-                                                return value[0];
-                                            } else {
-                                                return null;
-                                            }
-                                        default:
-                                            var value = control.val();
-                                            if (value && value.length > 0) {
-                                                return value;
-                                            } else {
-                                                return null;
-                                            }
-                                    }
-                                case 'textarea':
-                                    var value = control.val();
-                                    if (value) {
-                                        if (value.length === 0) {
-                                            value = null;
+                            case 'input':
+                                switch (control.attr('type')) {
+                                case 'checkbox':
+                                    return control.map(function () {
+                                        var $el = $(this);
+                                        if ($el.prop('checked')) {
+                                            return $el.val();
+                                        } else {
+                                            return null;
                                         }
-                                    }
-                                    return value;
-                                case 'select':
-                                    var value = control.val();
-                                    if (value) {
-                                        if (value.length === 0) {
-                                            value = null;
+                                    }).get();
+                                case 'radio':
+                                    var value = control.map(function () {
+                                        var $el = $(this);
+                                        if ($el.prop('checked')) {
+                                            return $el.val();
+                                        } else {
+                                            return null;
                                         }
+                                    }).get();
+                                    if (value.length === 1) {
+                                        return value[0];
+                                    } else {
+                                        return null;
                                     }
-                                    return value;
+                                default:
+                                    var value = control.val();
+                                    if (value && value.length > 0) {
+                                        return value;
+                                    } else {
+                                        return null;
+                                    }
+                                }
+                            case 'textarea':
+                                var value = control.val();
+                                if (value) {
+                                    if (value.length === 0) {
+                                        value = null;
+                                    }
+                                }
+                                return value;
+                            case 'select':
+                                var value = control.val();
+                                if (value) {
+                                    if (value.length === 0) {
+                                        value = null;
+                                    }
+                                }
+                                return value;
                             }
                         }
                     },
                     parseObject: {
-                        value: function(schema) {
+                        value: function (schema) {
                             var newObject = {};
                             var propNames = Object.getOwnPropertyNames(schema.properties);
                             for (var i = 0; i < propNames.length; i++) {
@@ -261,57 +261,57 @@ define([
                                 var propSchema = schema.properties[propName];
 
                                 switch (propSchema.type) {
-                                    case 'object':
-                                        var json = {};
-                                        // var node = parentNode.find('[data-field-group="'+propName+'"]');
-                                        this.currentPath.push(propName);
+                                case 'object':
+                                    var json = {};
+                                    // var node = parentNode.find('[data-field-group="'+propName+'"]');
+                                    this.currentPath.push(propName);
 
-                                        var value = this.parseObject(propSchema);
-                                        if (value) {
-                                            newObject[propName] = value;
-                                        }
+                                    var value = this.parseObject(propSchema);
+                                    if (value) {
+                                        newObject[propName] = value;
+                                    }
 
 
-                                        this.currentPath.pop();
-                                        break;
-                                    case 'array':
-                                        this.currentPath.push(propName);
-                                        var value = this.parseArray(propSchema);
-                                        if (value) {
-                                            newObject[propName] = value;
-                                        }
-                                        this.currentPath.pop();
-                                        break;
-                                    case 'string':
-                                        this.currentPath.push(propName);
-                                        var value = this.parseString(propSchema);
-                                        var error = this.validateString(value, propSchema);
-                                        if (error) {
-                                            this.addFieldError({
-                                                propPath: this.currentPath.join('.'),
-                                                message: error
+                                    this.currentPath.pop();
+                                    break;
+                                case 'array':
+                                    this.currentPath.push(propName);
+                                    var value = this.parseArray(propSchema);
+                                    if (value) {
+                                        newObject[propName] = value;
+                                    }
+                                    this.currentPath.pop();
+                                    break;
+                                case 'string':
+                                    this.currentPath.push(propName);
+                                    var value = this.parseString(propSchema);
+                                    var error = this.validateString(value, propSchema);
+                                    if (error) {
+                                        this.addFieldError({
+                                            propPath: this.currentPath.join('.'),
+                                            message: error
 
-                                            })
-                                        }
-                                        if (value !== undefined) {
-                                            newObject[propName] = value;
-                                        }
-                                        this.currentPath.pop();
-                                        break;
-                                    case 'integer':
-                                        this.currentPath.push(propName);
-                                        var value = this.parseInteger(propSchema);
-                                        if (value !== undefined) {
-                                            newObject[propName] = value;
-                                        }
-                                        this.currentPath.pop();
-                                        break;
-                                    case 'boolean':
-                                        // noop
-                                        break;
-                                    case 'null':
-                                        // noop
-                                        break;
+                                        })
+                                    }
+                                    if (value !== undefined) {
+                                        newObject[propName] = value;
+                                    }
+                                    this.currentPath.pop();
+                                    break;
+                                case 'integer':
+                                    this.currentPath.push(propName);
+                                    var value = this.parseInteger(propSchema);
+                                    if (value !== undefined) {
+                                        newObject[propName] = value;
+                                    }
+                                    this.currentPath.pop();
+                                    break;
+                                case 'boolean':
+                                    // noop
+                                    break;
+                                case 'null':
+                                    // noop
+                                    break;
                                 }
 
                             }
@@ -336,7 +336,7 @@ define([
 
                     },
                     parseArray: {
-                        value: function(schema) {
+                        value: function (schema) {
                             // for now just handle a non-nested array ... i.e. an array of objects or values
                             var itemSchema = schema.items;
                             // The array items are driven by the DOM in this case. We need to loop through the
@@ -348,59 +348,59 @@ define([
                             // multiple inputs with the same name (?).
                             // We have to handle the case of multi-valued fields (checkbox)
                             switch (itemSchema.type) {
-                                case 'string':
-                                    // map to controls here. If the controls are implemented right, as checkboxes or
-                                    // a select with multiple-values, we get back an array of values.
-                                    return this.getFieldValue(path);
-                                case 'object':
-                                    // we don't have a canned way to get a set of fields ... yet.
-                                    var value = this.container.find('[data-field="' + path + '"] fieldset').map(function(i) {
-                                        // do array objects in a separate parser because we need to establish a new
-                                        // container (one for each array element) and path (a fresh path for each array element and container)
-                                        var newObj = Object.create(parser).init({
-                                            container: $(this),
-                                            fieldValidationErrors: fieldValidationErrors,
-                                            objectValidationErrors: objectValidationErrors
-                                        }).parseObject(itemSchema);
-                                        return newObj;
-                                    }).get();
-                                    return value;
-                                default:
-                                    throw "Can't make array out of " + itemSchema.type + " yet.";
+                            case 'string':
+                                // map to controls here. If the controls are implemented right, as checkboxes or
+                                // a select with multiple-values, we get back an array of values.
+                                return this.getFieldValue(path);
+                            case 'object':
+                                // we don't have a canned way to get a set of fields ... yet.
+                                var value = this.container.find('[data-field="' + path + '"] fieldset').map(function (i) {
+                                    // do array objects in a separate parser because we need to establish a new
+                                    // container (one for each array element) and path (a fresh path for each array element and container)
+                                    var newObj = Object.create(parser).init({
+                                        container: $(this),
+                                        fieldValidationErrors: fieldValidationErrors,
+                                        objectValidationErrors: objectValidationErrors
+                                    }).parseObject(itemSchema);
+                                    return newObj;
+                                }).get();
+                                return value;
+                            default:
+                                throw 'Can\'t make array out of ' + itemSchema.type + ' yet.';
                             }
                         }
 
                     },
                     validateString: {
-                        value: function(value, schema) {
+                        value: function (value, schema) {
                             // handle formats:
                             if (value) {
                                 switch (schema.format) {
-                                    case 'email':
-                                        var emailRe = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                                        if (!emailRe.test(value)) {
-                                            return 'Invalid email format';
-                                        }
-                                        break;
+                                case 'email':
+                                    var emailRe = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                                    if (!emailRe.test(value)) {
+                                        return 'Invalid email format';
+                                    }
+                                    break;
                                 }
                             }
                             return false;
                         }
                     },
                     parseString: {
-                        value: function(schema) {
+                        value: function (schema) {
                             var fieldName = this.currentPath.join('.');
                             return this.getFieldValue(fieldName);
                         }
                     },
                     addFieldError: {
-                        value: function(err) {
+                        value: function (err) {
                             err.container = this.container;
                             this.fieldValidationErrors.push(err);
                         }
                     },
                     parseInteger: {
-                        value: function(schema) {
+                        value: function (schema) {
                             var fieldName = this.currentPath.join('.');
                             var strVal = this.getFieldValue(fieldName);
                             if (strVal) {
@@ -491,7 +491,7 @@ define([
             }
         },
         showFieldValidationErrors: {
-            value: function(errors) {
+            value: function (errors) {
                 for (var i = 0; i < errors.length; i++) {
                     var error = errors[i];
                     this.showFieldError(error.container, error.propPath, error.message);
@@ -499,7 +499,7 @@ define([
             }
         },
         getUserProfileFormSchema: {
-            value: function() {
+            value: function () {
                 // For building and validating user form input for a user profile.
                 // This is a subset of the user profile schema.
                 // FORNOW: fairly loose, other than sensible limits and formatting checks.
@@ -620,7 +620,7 @@ define([
             }
         },
         updateUserProfileFromForm: {
-            value: function() {
+            value: function () {
                 this.clearErrors();
                 var schema = this.getUserProfileFormSchema();
                 try {
@@ -644,7 +644,7 @@ define([
         },
 
         renderErrorView: {
-            value: function(data) {
+            value: function (data) {
                 // Make sure we have the standard panel layout.
                 console.error(data);
 
@@ -663,7 +663,7 @@ define([
                         data.title = 'Error';
                     }
                     if (!data.message) {
-                        data.message = "unknown error";
+                        data.message = 'unknown error';
                     }
                 }
 
@@ -677,7 +677,7 @@ define([
 
         // DOM QUERY
         getFieldValue: {
-            value: function(name) {
+            value: function (name) {
                 var field = this.places.content.find('[data-field="' + name + '"]');
                 if (!field || field.length === 0) {
                     return undefined;
@@ -685,65 +685,65 @@ define([
                     var control = field.find('input, textarea, select');
                     var tag = control.prop('tagName').toLowerCase();
                     switch (tag) {
-                        case 'input':
-                            var inputType = control.attr('type');
-                            switch (inputType) {
-                                case 'checkbox':
-                                    return control.map(function() {
-                                        var $el = $(this);
-                                        if ($el.prop('checked')) {
-                                            return $el.val();
-                                        } else {
-                                            return null;
-                                        }
-                                    }).get();
-                                case 'radio':
-                                    var value = control.map(function() {
-                                        var $el = $(this);
-                                        if ($el.prop('checked')) {
-                                            return $el.val();
-                                        } else {
-                                            return null;
-                                        }
-                                    }).get();
-                                    if (value.length === 1) {
-                                        return value[0];
-                                    } else {
-                                        return null;
-                                    }
-                                default:
-                                    var value = control.val();
-                                    if (value && value.length > 0) {
-                                        return value;
-                                    } else {
-                                        return null;
-                                    }
-                            }
-                        case 'textarea':
-                            var value = control.val();
-                            if (value) {
-                                if (value.length === 0) {
-                                    value = null;
+                    case 'input':
+                        var inputType = control.attr('type');
+                        switch (inputType) {
+                        case 'checkbox':
+                            return control.map(function () {
+                                var $el = $(this);
+                                if ($el.prop('checked')) {
+                                    return $el.val();
+                                } else {
+                                    return null;
                                 }
-                            }
-                            return value;
-                            break;
-                        case 'select':
-                            var value = control.val();
-                            if (value) {
-                                if (value.length === 0) {
-                                    value = null;
+                            }).get();
+                        case 'radio':
+                            var value = control.map(function () {
+                                var $el = $(this);
+                                if ($el.prop('checked')) {
+                                    return $el.val();
+                                } else {
+                                    return null;
                                 }
+                            }).get();
+                            if (value.length === 1) {
+                                return value[0];
+                            } else {
+                                return null;
                             }
-                            return value;
-                            break;
+                        default:
+                            var value = control.val();
+                            if (value && value.length > 0) {
+                                return value;
+                            } else {
+                                return null;
+                            }
+                        }
+                    case 'textarea':
+                        var value = control.val();
+                        if (value) {
+                            if (value.length === 0) {
+                                value = null;
+                            }
+                        }
+                        return value;
+                        break;
+                    case 'select':
+                        var value = control.val();
+                        if (value) {
+                            if (value.length === 0) {
+                                value = null;
+                            }
+                        }
+                        return value;
+                        break;
                     }
                 }
 
             }
         },
         getProfileStatus: {
-            value: function() {
+            value: function () {
                 if (this.runtime.service('session').isLoggedIn()) {
                     return this.userProfile.getProfileStatus();
                 } else {
@@ -756,70 +756,70 @@ define([
         // main views
 
         render: {
-            value: function() {
+            value: function () {
                 // Generate initial view based on the current state of this widget.
                 // Head off at the pass -- if not logged in, can't show profile.
                 var state = this.getProfileStatus();
                 this.runtime.send('ui', 'clearButtons');
                 switch (state) {
-                    case 'notloggedin':
-                        // NOT LOGGED IN
-                        this.renderLayout();
-                        this.places.title.html('Unauthorized');
-                        this.places.content.html(this.renderTemplate('unauthorized'));
-                        break;
-                    case 'profile':
-                        // NORMAL PROFILE 
-                        // Title can be be based on logged in user infor or the profile.
-                        // set window title.
-                        var realname = this.userProfile.getProp('user.realname');
-                        $(document).find('head title').text('User Profile for ' + realname + ' | KBase');
+                case 'notloggedin':
+                    // NOT LOGGED IN
+                    this.renderLayout();
+                    this.places.title.html('Unauthorized');
+                    this.places.content.html(this.renderTemplate('unauthorized'));
+                    break;
+                case 'profile':
+                    // NORMAL PROFILE 
+                    // Title can be be based on logged in user infor or the profile.
+                    // set window title.
+                    var realname = this.userProfile.getProp('user.realname');
+                    $(document).find('head title').text('User Profile for ' + realname + ' | KBase');
 
-                        this.renderViewEditLayout();
-                        this.renderInfoView();
-                        break;
-                    case 'stub':
-                        // STUB PROFILE
-                        // Title can be be based on logged in user infor or the profile.
-                        var realname = this.userProfile.getProp('user.realname');
-                        $(document).find('head title').text('User Profile for ' + realname + ' | KBase');
-                        this.renderViewEditLayout();
-                        this.renderMessages();
-                        this.renderStubProfileView();
-                        break;
-                        /*
-                         case 'accountonly':
-                         // NO PROFILE
-                         // NB: should not be here!!
-                         // no profile, but have basic account info.
-                         this.renderLayout();
-                         this.places.title.html(this.accountRecord.fullName + ' (' + this.accountRecord.userName + ')');
-                         // this.renderPicture();
-                         this.renderNoProfileView();
-                         break;
-                         */
-                    case 'error':
-                        this.renderLayout();
-                        this.renderErrorView('Profile is in error state');
-                        break;
-                    case 'none':
-                        // NOT FOUND
-                        // no profile, no basic aaccount info
-                        this.renderLayout();
-                        this.places.title.html('User Not Found');
-                        this.renderPicture();
-                        this.places.content.html(this.renderTemplate('no_user'));
-                        break;
-                    default:
-                        this.renderLayout();
-                        this.renderErrorView('Invalid profile state "' + state + '"')
+                    this.renderViewEditLayout();
+                    this.renderInfoView();
+                    break;
+                case 'stub':
+                    // STUB PROFILE
+                    // Title can be be based on logged in user infor or the profile.
+                    var realname = this.userProfile.getProp('user.realname');
+                    $(document).find('head title').text('User Profile for ' + realname + ' | KBase');
+                    this.renderViewEditLayout();
+                    this.renderMessages();
+                    this.renderStubProfileView();
+                    break;
+                    /*
+                     case 'accountonly':
+                     // NO PROFILE
+                     // NB: should not be here!!
+                     // no profile, but have basic account info.
+                     this.renderLayout();
+                     this.places.title.html(this.accountRecord.fullName + ' (' + this.accountRecord.userName + ')');
+                     // this.renderPicture();
+                     this.renderNoProfileView();
+                     break;
+                     */
+                case 'error':
+                    this.renderLayout();
+                    this.renderErrorView('Profile is in error state');
+                    break;
+                case 'none':
+                    // NOT FOUND
+                    // no profile, no basic aaccount info
+                    this.renderLayout();
+                    this.places.title.html('User Not Found');
+                    this.renderPicture();
+                    this.places.content.html(this.renderTemplate('no_user'));
+                    break;
+                default:
+                    this.renderLayout();
+                    this.renderErrorView('Invalid profile state "' + state + '"')
                 }
                 this.renderMessages();
                 return this;
             }
         },
         renderInfoView: {
-            value: function() {
+            value: function () {
                 var widget = this;
                 if (this.isOwner()) {
                     // For now the user profile is available through the login widget, not the session.
@@ -833,7 +833,7 @@ define([
                         label: 'Account',
                         style: 'default',
                         icon: 'wrench',
-                        callback: function() {
+                        callback: function () {
                             this.runtime.send('app', 'redirect', {
                                 url: this.runtime.config('resources.userAccount.access.url'),
                                 new_window: true
@@ -846,13 +846,13 @@ define([
                         label: 'Delete Profile',
                         style: 'default',
                         icon: 'trash-o',
-                        callback: function() {
+                        callback: function () {
                             widget.clearMessages();
                             var modal = $('.UserProfileWidget [data-widget-modal="confirm-optout"]').modal('show');
                             // NB the deny button is already wired as [data-dismiss="modal"] which will 
                             // close the modal, and without further intervention, do nothing.
-                            modal.find('[data-widget-modal-control="confirm"]').on('click', function(e) {
-                                modal.modal('hide').on('hidden.bs.modal', function(e) {
+                            modal.find('[data-widget-modal-control="confirm"]').on('click', function (e) {
+                                modal.modal('hide').on('hidden.bs.modal', function (e) {
                                     widget.deleteProfile();
                                 });
                             });
@@ -863,7 +863,7 @@ define([
                         label: 'Edit Profile',
                         style: 'primary',
                         icon: 'edit',
-                        callback: function() {
+                        callback: function () {
                             widget.clearMessages();
                             widget.renderEditView();
                         }.bind(this)
@@ -883,21 +883,21 @@ define([
         /* Does not actually delete the profile "userRecord", rather just the user-defined part of the profile
          and the (TODO:) state setting that allows the profile to be viewed */
         deleteProfile: {
-            value: function() {
+            value: function () {
                 this.userProfile.deleteUserdata()
-                    .then(function() {
+                    .then(function () {
                         this.runtime.send('session', 'profile.saved');
                         this.runtime.send('profile', 'check');
                         this.addSuccessMessage('Your profile has been successfully removed.');
                         this.render();
                     }.bind(this))
-                    .catch(function(err) {
+                    .catch(function (err) {
                         this.renderErrorView(err);
                     }.bind(this));
             }
         },
         showFieldError: {
-            value: function(container, field, message) {
+            value: function (container, field, message) {
                 if (typeof field === 'string') {
                     field = container.find('[data-field="' + field + '"]');
                 }
@@ -910,7 +910,7 @@ define([
             }
         },
         renderEditView: {
-            value: function() {
+            value: function () {
                 var W = this;
                 this.runtime.send('ui', 'setTitle', { title: 'Editing your profile' });
                 this.runtime.send('ui', 'clearButtons');
@@ -920,10 +920,10 @@ define([
                     style: 'primary',
                     icon: 'save',
                     disabled: true,
-                    callback: function() {
+                    callback: function () {
                         if (W.updateUserProfileFromForm()) {
                             W.userProfile.saveProfile()
-                                .then(function() {
+                                .then(function () {
                                     W.changed = false;
                                     W.renderViewEditLayout();
                                     W.addSuccessMessage('Your user profile has been updated.');
@@ -931,7 +931,7 @@ define([
                                     W.runtime.send('session', 'profile.saved');
                                     W.runtime.send('profile', 'check');
                                 })
-                                .catch(function(err) {
+                                .catch(function (err) {
                                     W.renderErrorView(err);
                                 });
                         }
@@ -942,7 +942,7 @@ define([
                     label: 'Cancel',
                     style: 'default',
                     icon: 'ban',
-                    callback: function() {
+                    callback: function () {
                         // Do we have pending changes?
                         // 
                         // var changed = !NAVBAR.findButton('save').prop('disabled');
@@ -953,10 +953,10 @@ define([
                             var modal = $('.UserProfileWidget [data-widget-modal="confirm-cancel"]')
                                 .modal('show');
 
-                            modal.find('[data-widget-modal-control="confirm-cancel"]').on('click', function(e) {
+                            modal.find('[data-widget-modal-control="confirm-cancel"]').on('click', function (e) {
                                 modal
                                     .modal('hide')
-                                    .on('hidden.bs.modal', function(e) {
+                                    .on('hidden.bs.modal', function (e) {
                                         W.changed = false;
                                         W.clearMessages();
                                         W.renderInfoView();
@@ -1030,7 +1030,7 @@ define([
                 var widget = this;
 
                 // wire up affiliation add/remove buttons.
-                this.places.content.find('[data-button="add-affiliation"]').on('click', function(e) {
+                this.places.content.find('[data-button="add-affiliation"]').on('click', function (e) {
                     // grab the container 
                     var affiliations = this.places.content.find('[data-field="profile.userdata.affiliations"]');
 
@@ -1052,7 +1052,7 @@ define([
                 }.bind(this));
 
                 // Wire up remove button for any affiliation.
-                this.places.content.find('[data-field="profile.userdata.affiliations"]').on('click', '[data-button="remove"]', function(e) {
+                this.places.content.find('[data-field="profile.userdata.affiliations"]').on('click', '[data-button="remove"]', function (e) {
                     // remove the containing affiliation group.
                     $(this).closest('[data-field-group="affiliation"]').remove();
                     widget.changed = true;
@@ -1063,7 +1063,7 @@ define([
 
                 });
                 // on any field change events, we update the relevant affiliation panel title
-                this.places.content.find('[data-field="profile.userdata.affiliations"]').on('keyup', 'input', function(e) {
+                this.places.content.find('[data-field="profile.userdata.affiliations"]').on('keyup', 'input', function (e) {
                     // remove the containing affiliation group.
                     var panel = $(this).closest('[data-field-group="affiliation"]'),
                         title = panel.find('[data-field="title"] input').val(),
@@ -1075,7 +1075,7 @@ define([
                     panel.find('.panel-title').html(title + ' @ ' + institution + ', ' + startYear + '-' + endYear);
                 });
                 // Monitor changes on the entire form ... if any field is changed we flag the profile as dirty.
-                this.places.content.find('form').on('input change', function(e) {
+                this.places.content.find('form').on('input change', function (e) {
                     // enable the save button.
                     // For now we can also use this as a flag for whether to require confirmation
                     // to leave the profile.
@@ -1116,21 +1116,21 @@ define([
          */
 
         renderStubProfileView: {
-            value: function() {
+            value: function () {
                 this.renderPicture();
                 this.places.title.html(this.userProfile.userRecord.user.realname + ' (' + this.userProfile.userRecord.user.username + ')');
                 this.places.content.html(this.renderTemplate('stub_profile'));
                 var widget = this;
                 if (this.isOwner()) {
-                    $('[data-button="create-profile"]').on('click', function(e) {
+                    $('[data-button="create-profile"]').on('click', function (e) {
                         widget.userProfile.createProfile()
-                            .then(function() {
+                            .then(function () {
                                 widget.runtime.send('session', 'profile.saved');
                                 widget.clearMessages();
                                 widget.addSuccessMessage('Your user profile has been created.');
                                 widget.render();
                             })
-                            .catch(function(err) {
+                            .catch(function (err) {
                                 widget.renderErrorView(err);
                             });
                     });
@@ -1139,7 +1139,7 @@ define([
         },
         // dom  update utils
         clearErrors: {
-            value: function() {
+            value: function () {
                 this.clearMessages();
                 this.clearFieldMessages();
                 this.places.content.find('.has-error').removeClass('has-error');
@@ -1148,19 +1148,19 @@ define([
             }
         },
         clearFieldMessages: {
-            value: function() {
+            value: function () {
                 $('[data-field-message]').empty();
             }
         },
         renderPicture: {
-            value: function() {
+            value: function () {
                 this.container
                     .find('[data-placeholder="picture"]')
                     .html(this.renderTemplate('picture'));
             }
         },
         renderViewEditLayout: {
-            value: function() {
+            value: function () {
                 if (this.isOwner()) {
                     this.runtime.send('ui', 'setTitle', 'Viewing your profile');
                 } else {
@@ -1181,7 +1181,7 @@ define([
             }
         },
         renderLayout: {
-            value: function() {
+            value: function () {
                 nunjucks.configure({
                     autoescape: true
                 });

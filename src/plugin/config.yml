@@ -7,47 +7,26 @@ package:
     date: August 5, 2015
     version: 1.0.0
 source:
-    ## sources are relative to build/plugins/PACKAGE/source/javascript
-    ## NB: need to quote file names, otherwise 
-    modules:
-        -
-            module: kb_userProfile_panel
-            file: panel
-        -
-            module: kb_userProfile_widget_base
-            file: widgets/userProfileBase
-        -
-            module: kb_userProfile_widget_userProfileEditor
-            file: widgets/userProfileEditor
-        -
-            module: kb_userProfile_widget_userSearch
-            file: widgets/userSearch
-        -
-            module: kb_userProfile_widget_collaboratorNetwork
-            file: widgets/collaboratorNetwork
-        -
-            module: kb_userProfile_widget_narrativeBrowser
-            file: widgets/narrativeBrowser
 install:
     widgets:
         -
-            module: kb_userProfile_panel
+            module: panel
             id: kb_userProfile_panel
             type: factory
         -
-            module: kb_userProfile_widget_userProfileEditor
+            module: widgets/userProfileEditor
             id: kb_userProfile_profileEditor
             type: object
         -
-            module: kb_userProfile_widget_userSearch
+            module: widgets/userSearch
             id: kb_userProfile_userSearch
             type: object
         -
-            module: kb_userProfile_widget_collaboratorNetwork
+            module: widgets/collaboratorNetwork
             id: kb_userProfile_collaboratorNetwork
             type: object
         -
-            module: kb_userProfile_widget_narrativeBrowser
+            module: widgets/narrativeBrowser
             id: kb_userProfile_narrativeBrowser
             type: object
     routes:
