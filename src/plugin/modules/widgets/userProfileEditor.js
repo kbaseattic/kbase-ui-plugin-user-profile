@@ -828,36 +828,36 @@ define([
                     this.runtime.send('ui', 'clearButtons');
                     this.runtime.send('ui', 'setTitle', 'Your Profile');
 
-                    this.runtime.send('ui', 'addButton', {
-                        name: 'account',
-                        label: 'Account',
-                        style: 'default',
-                        icon: 'wrench',
-                        callback: function () {
-                            this.runtime.send('app', 'redirect', {
-                                url: this.runtime.config('resources.userAccount.access.url'),
-                                new_window: true
-                            })
-                        }.bind(this)
-                    });
+                    // this.runtime.send('ui', 'addButton', {
+                    //     name: 'account',
+                    //     label: 'Account',
+                    //     style: 'default',
+                    //     icon: 'wrench',
+                    //     callback: function () {
+                    //         this.runtime.send('app', 'redirect', {
+                    //             url: this.runtime.config('resources.userAccount.access.url'),
+                    //             new_window: true
+                    //         })
+                    //     }.bind(this)
+                    // });
 
-                    this.runtime.send('ui', 'addButton', {
-                        name: 'delete',
-                        label: 'Delete Profile',
-                        style: 'default',
-                        icon: 'trash-o',
-                        callback: function () {
-                            widget.clearMessages();
-                            var modal = $('.UserProfileWidget [data-widget-modal="confirm-optout"]').modal('show');
-                            // NB the deny button is already wired as [data-dismiss="modal"] which will 
-                            // close the modal, and without further intervention, do nothing.
-                            modal.find('[data-widget-modal-control="confirm"]').on('click', function (e) {
-                                modal.modal('hide').on('hidden.bs.modal', function (e) {
-                                    widget.deleteProfile();
-                                });
-                            });
-                        }.bind(this)
-                    });
+                    // this.runtime.send('ui', 'addButton', {
+                    //     name: 'delete',
+                    //     label: 'Delete Profile',
+                    //     style: 'default',
+                    //     icon: 'trash-o',
+                    //     callback: function () {
+                    //         widget.clearMessages();
+                    //         var modal = $('.UserProfileWidget [data-widget-modal="confirm-optout"]').modal('show');
+                    //         // NB the deny button is already wired as [data-dismiss="modal"] which will 
+                    //         // close the modal, and without further intervention, do nothing.
+                    //         modal.find('[data-widget-modal-control="confirm"]').on('click', function (e) {
+                    //             modal.modal('hide').on('hidden.bs.modal', function (e) {
+                    //                 widget.deleteProfile();
+                    //             });
+                    //         });
+                    //     }.bind(this)
+                    // });
                     this.runtime.send('ui', 'addButton', {
                         name: 'edit',
                         label: 'Edit Profile',
