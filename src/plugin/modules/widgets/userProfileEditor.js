@@ -864,8 +864,14 @@ define([
                         style: 'primary',
                         icon: 'edit',
                         callback: function () {
-                            widget.clearMessages();
-                            widget.renderEditView();
+                            this.runtime.send('app', 'navigate', {
+                                path: 'auth2/account',
+                                params: {
+                                    tab: 'profile'
+                                }
+                            });
+                            // widget.clearMessages();
+                            // widget.renderEditView();
                         }.bind(this)
                     });
 
