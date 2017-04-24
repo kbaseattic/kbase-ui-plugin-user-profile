@@ -60,12 +60,20 @@ define([
                         }
                         widget.params.searchText = $(this).val();
                         if (widget.params.searchText && widget.params.searchText.length < 3) {
-                            widget.refresh().done();
+                            // widget.refresh().done();
+                            widget.setState('searchResults', []);
                         } else {
-                            Promise.resolve(widget.userProfileClient.filter_users({
-                                    filter: widget.params.searchText
-                                }))
-                                .then(function (users) {
+                            return widget.runtime.service('session').getClient().userSearch({
+                                    prefix: widget.params.searchText,
+                                    fields: 'user,display'
+                                })
+                                .then(function (found) {
+                                    var users = Object.keys(found).map(function (username) {
+                                        return {
+                                            username: username,
+                                            realname: found[username]
+                                        };
+                                    });
                                     users.sort(function (a, b) {
                                         var aName = a.realname.toLowerCase();
                                         var bName = b.realname.toLowerCase();
@@ -83,7 +91,7 @@ define([
                                     widget.renderErrorView(err);
                                 });
                         }
-                    });
+                    }).bind(this);
                 }
             }
         }
