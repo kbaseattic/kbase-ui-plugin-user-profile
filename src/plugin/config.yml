@@ -14,13 +14,14 @@ install:
             id: kb_userProfile_panel
             type: factory
         -
-            module: widgets/userProfileEditor
-            id: kb_userProfile_profileEditor
-            type: object
+            module: widgets/userProfileViewer
+            id: kb_userProfile_profileViewer
+            type: factory
         -
             module: widgets/userSearch
             id: kb_userProfile_userSearch
-            type: object
+            css: true
+            type: factory
         -
             module: widgets/collaboratorNetwork
             id: kb_userProfile_collaboratorNetwork
@@ -29,6 +30,10 @@ install:
             module: widgets/narrativeBrowser
             id: kb_userProfile_narrativeBrowser
             type: object
+    ko-components:
+        -
+            name: profile-view
+            module: components/profileView
     routes:
         -
             path: ['people', {type: param, name: username}]
