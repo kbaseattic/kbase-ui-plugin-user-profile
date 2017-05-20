@@ -64,6 +64,7 @@ define([
                         }
                     }),
 
+                    '<!-- ko if: $data.profile.profile.userdata -->',
                     div({
                         style: {
                             fontStyle: 'italic',
@@ -103,6 +104,8 @@ define([
                             text: 'profile.profile.userdata.country'
                         }
                     }),
+
+                    '<!-- ko if: $data.profile.profile.userdata.researchInterests &&  profile.profile.userdata.researchInterests.length > 0 -->',
                     h3('Research Interests'),
                     div({
                         dataBind: {
@@ -121,6 +124,9 @@ define([
                             text: '$data'
                         }
                     })),
+                    '<!-- /ko -->',
+
+                    '<!-- ko if: $data.profile.profile.userdata.fundingSource &&  profile.profile.userdata.fundingSource.length > 0 -->',
                     div({
                         dataBind: {
                             if: 'profile.profile.userdata.fundingSource'
@@ -129,10 +135,13 @@ define([
                         h3('Primary Funding Source'),
                         div({
                             dataBind: {
-                                text: 'profile.profile.userdata.fundingSource'
+                                text: 'profile.profile.userdata.fundingSource.length'
                             }
                         })
                     ]),
+                    '<!-- /ko -->',
+
+                    '<!-- ko if: $data.profile.profile.userdata.affiliations &&  profile.profile.userdata.affiliations.length > 0 -->',
                     h3('Affiliations'),
                     div({
                         dataBind: {
@@ -186,6 +195,9 @@ define([
                             })
                         ])
                     ])),
+                    '<!-- /ko -->',
+
+                    '<!-- ko if: personalStatementDisplay().length > 0 -->',
                     h3('Research or Personal Statement'),
                     div({
                         dataBind: {
@@ -201,7 +213,9 @@ define([
                             visible: 'personalStatementDisplay().length > 0',
                             html: 'personalStatementDisplay()'
                         }
-                    })
+                    }),
+                    '<!-- /ko -->',
+                    '<!-- /ko -->'
                 ])
             ])
         });
@@ -214,15 +228,22 @@ define([
         // just a parasitic widget... var gravatarUrl = ko.pureComputed(function () {
         var userProfile = params.profile;
         var gravatarUrl = ko.pureComputed(function () {
+            if (!userProfile.profile.userdata) {
+                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+            }
             switch (userProfile.profile.userdata.avatarOption) {
             case 'gravatar':
                 return 'https://www.gravatar.com/avatar/' + userProfile.profile.synced.gravatarHash + '?s=200&amp;r=pg&d=' + userProfile.profile.userdata.gravatarDefault;
             case 'mysteryman':
+            default:
                 return Plugin.plugin.fullPath + '/images/nouserpic.png';
             }
 
         });
         var personalStatementDisplay = ko.pureComputed(function () {
+            if (!userProfile.profile.userdata) {
+                return '';
+            }
             var text = userProfile.profile.userdata.personalStatement;
             if (!text) {
                 return '';
