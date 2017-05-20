@@ -135,7 +135,7 @@ define([
                         h3('Primary Funding Source'),
                         div({
                             dataBind: {
-                                text: 'profile.profile.userdata.fundingSource.length'
+                                text: 'profile.profile.userdata.fundingSource'
                             }
                         })
                     ]),
