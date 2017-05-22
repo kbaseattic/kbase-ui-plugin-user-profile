@@ -227,13 +227,18 @@ define([
     function viewModel(params) {
         // just a parasitic widget... var gravatarUrl = ko.pureComputed(function () {
         var userProfile = params.profile;
+        if (!userProfile.profile) {
+            userProfile.profile = {
+                userdata: {}
+            };
+        } else if (!userProfile.profile.userdata) {
+            userProfile.profile.userdata = {};
+        }
         var gravatarUrl = ko.pureComputed(function () {
-            if (!userProfile.profile.userdata) {
-                return Plugin.plugin.fullPath + '/images/nouserpic.png';
-            }
             switch (userProfile.profile.userdata.avatarOption) {
             case 'gravatar':
                 return 'https://www.gravatar.com/avatar/' + userProfile.profile.synced.gravatarHash + '?s=200&amp;r=pg&d=' + userProfile.profile.userdata.gravatarDefault;
+            case 'silhoutte':
             case 'mysteryman':
             default:
                 return Plugin.plugin.fullPath + '/images/nouserpic.png';
@@ -241,9 +246,6 @@ define([
 
         });
         var personalStatementDisplay = ko.pureComputed(function () {
-            if (!userProfile.profile.userdata) {
-                return '';
-            }
             var text = userProfile.profile.userdata.personalStatement;
             if (!text) {
                 return '';

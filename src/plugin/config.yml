@@ -29,7 +29,7 @@ install:
         -
             module: widgets/narrativeBrowser
             id: kb_userProfile_narrativeBrowser
-            type: object
+            type: factory
     ko-components:
         -
             name: profile-view

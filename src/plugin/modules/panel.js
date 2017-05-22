@@ -14,8 +14,6 @@ define([
             runtime = config.runtime,
             widgetSet = WidgetSet.make({ runtime: runtime });
 
-
-
         function renderPanel(params) {
             return new Promise(function (resolve) {
                 // Render panel
@@ -33,10 +31,12 @@ define([
                         ])
                     ]),
                     div({ class: 'row' }, [
-                        div({ class: 'col-sm-6' }, [
+                        div({ class: 'col-sm-12' }, [
                             div({ id: widgetSet.addWidget('kb_userProfile_narrativeBrowser') })
-                        ]),
-                        div({ class: 'col-sm-6' }, [
+                        ])
+                    ]),
+                    div({ class: 'row' }, [
+                        div({ class: 'col-sm-12' }, [
                             div({ id: widgetSet.addWidget('kb_userProfile_collaboratorNetwork') })
                         ])
                     ])
