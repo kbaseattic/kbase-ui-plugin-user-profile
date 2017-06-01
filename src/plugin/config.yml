@@ -42,4 +42,5 @@ install:
         -
             path: ['people']
             widget: kb_userProfile_panel
-            authorization: true            
+            authorization: true
+

@@ -1,3 +1,33 @@
+/*
+Profile model:
+
+user
+    usernmae (set from auth2 account)
+    realname (synced from auth2 account)
+userdata
+    organization
+    department
+    jobTitle
+    jobTitleOther
+    affiliations
+        title
+        organization
+        started
+        ended
+    city
+    state
+    zip
+    country
+    researchInterests
+    primaryFundingSource
+    researchStatement
+    avatarOption
+    gravatarDefault
+synced
+    gravatarHash
+preferences
+
+*/
 define([
     'knockout-plus',
     'kb_common/html',
@@ -69,11 +99,23 @@ define([
                         style: {
                             fontStyle: 'italic',
                             marginBottom: '1em'
-                        },
-                        dataBind: {
-                            text: 'profile.profile.userdata.jobTitle'
                         }
-                    }),
+                    }, [
+                        '<!-- ko if: profile.profile.userdata.jobTitle !== "Other" -->',
+                        span({
+                            dataBind: {
+                                text: 'profile.profile.userdata.jobTitle'
+                            }
+                        }),
+                        '<!-- /ko -->',
+                        '<!-- ko if: profile.profile.userdata.jobTitle === "Other" -->',
+                        span({
+                            dataBind: {
+                                text: 'profile.profile.userdata.jobTitleOther'
+                            }
+                        }),
+                        '<!-- /ko -->'
+                    ]),
                     div({
                         dataBind: {
                             text: 'profile.profile.userdata.organization'
@@ -84,27 +126,66 @@ define([
                             text: 'profile.profile.userdata.department'
                         }
                     }),
+                    // LOCATION
                     div({
                         dataBind: {
-                            text: 'profile.profile.userdata.city'
+                            if: 'profile.profile.userdata.country === "United States"'
                         }
-                    }),
-                    div({
-                        dataBind: {
-                            text: 'profile.profile.userdata.state'
-                        }
-                    }),
-                    div({
-                        dataBind: {
-                            text: 'profile.profile.userdata.postalCode'
-                        }
-                    }),
-                    div({
-                        dataBind: {
-                            text: 'profile.profile.userdata.country'
-                        }
-                    }),
+                    }, [
+                        div([
+                            span({
+                                dataBind: {
+                                    text: 'profile.profile.userdata.city'
+                                }
+                            }),
+                            ', ',
+                            span({
+                                dataBind: {
+                                    text: 'profile.profile.userdata.state'
+                                }
+                            }),
+                            span({
+                                dataBind: {
+                                    text: 'profile.profile.userdata.postalCode'
+                                },
+                                style: {
+                                    marginLeft: '10px'
+                                }
+                            })
+                        ]),
+                        div({
+                            dataBind: {
+                                text: 'profile.profile.userdata.country'
+                            }
+                        })
+                    ]),
 
+                    div({
+                        dataBind: {
+                            if: 'profile.profile.userdata.country !== "United States"'
+                        }
+                    }, [
+                        div({
+                            dataBind: {
+                                text: 'profile.profile.userdata.city'
+                            }
+                        }),
+                        div({
+                            dataBind: {
+                                text: 'profile.profile.userdata.state'
+                            }
+                        }),
+                        div({
+                            dataBind: {
+                                text: 'profile.profile.userdata.postalCode'
+                            }
+                        }),
+                        div({
+                            dataBind: {
+                                text: 'profile.profile.userdata.country'
+                            }
+                        })
+                    ]),
                     '<!-- ko if: $data.profile.profile.userdata.researchInterests &&  profile.profile.userdata.researchInterests.length > 0 -->',
                     h3('Research Interests'),
                     div({
@@ -151,16 +232,14 @@ define([
                             fontStyle: 'italic'
                         }
                     }, 'No affiliations provided'),
-                    div({
+                    ul({
                         dataBind: {
                             visible: 'profile.profile.userdata.affiliations.length > 0',
                             foreach: 'profile.profile.userdata.affiliations'
                         }
-                    }, div([
+                    }, li([
                         p({
-                            style: {
-                                fontWeight: 'bold'
-                            }
+
                         }, [
                             span({
                                 dataBind: {
@@ -170,18 +249,18 @@ define([
                             ' (',
                             span({
                                 dataBind: {
-                                    text: 'start_year'
+                                    text: 'started'
                                 }
                             }),
                             ' - ',
-                            '<!-- ko if: $data.end_year -->',
+                            '<!-- ko if: $data.ended -->',
                             span({
                                 dataBind: {
-                                    text: 'end_year'
+                                    text: 'ended'
                                 }
                             }),
                             '<!-- /ko -->',
-                            '<!-- ko if: !$data.end_year -->',
+                            '<!-- ko if: !$data.ended -->',
                             span({
 
                             }, 'present'),
@@ -190,18 +269,18 @@ define([
                             ' @ ',
                             span({
                                 dataBind: {
-                                    text: 'institution'
+                                    text: 'organization'
                                 }
                             })
                         ])
                     ])),
                     '<!-- /ko -->',
 
-                    '<!-- ko if: personalStatementDisplay().length > 0 -->',
+                    '<!-- ko if: researchStatementDisplay().length > 0 -->',
                     h3('Research or Personal Statement'),
                     div({
                         dataBind: {
-                            visible: 'personalStatementDisplay().length === 0'
+                            visible: 'researchStatementDisplay().length === 0'
                         },
                         style: {
                             fontStyle: 'italic'
@@ -210,8 +289,8 @@ define([
                     div({
                         class: 'well',
                         dataBind: {
-                            visible: 'personalStatementDisplay().length > 0',
-                            html: 'personalStatementDisplay()'
+                            visible: 'researchStatementDisplay().length > 0',
+                            html: 'researchStatementDisplay()'
                         }
                     }),
                     '<!-- /ko -->',
@@ -222,7 +301,7 @@ define([
     }
 
     function buildAvatarUrl(profile) {
-        switch (profile.profile.userdata.avatarOption || 'silhouette') {
+        switch (profile.profile.userdata.avatarOption || 'gravatar') {
         case 'gravatar':
             var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
             var gravatarHash = profile.profile.synced.gravatarHash;
@@ -254,8 +333,8 @@ define([
         var gravatarUrl = ko.pureComputed(function () {
             return buildAvatarUrl(userProfile);
         });
-        var personalStatementDisplay = ko.pureComputed(function () {
-            var text = userProfile.profile.userdata.personalStatement;
+        var researchStatementDisplay = ko.pureComputed(function () {
+            var text = userProfile.profile.userdata.researchStatement;
             if (!text) {
                 return '';
             }
@@ -264,7 +343,7 @@ define([
         return {
             profile: params.profile,
             gravatarUrl: gravatarUrl,
-            personalStatementDisplay: personalStatementDisplay
+            researchStatementDisplay: researchStatementDisplay
         };
 
     }
