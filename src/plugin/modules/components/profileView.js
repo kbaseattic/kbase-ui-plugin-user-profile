@@ -200,11 +200,20 @@ define([
                         dataBind: {
                             foreach: 'profile.profile.userdata.researchInterests'
                         }
-                    }, li({
-                        dataBind: {
-                            text: '$data'
-                        }
-                    })),
+                    }, li([
+                        span({
+                            dataBind: {
+                                text: '$data'
+                            }
+                        }),
+                        '<!-- ko if: $data === "Other" -->',
+                        span({
+                            dataBind: {
+                                text: '" - " + ($component.profile.profile.userdata.researchInterestsOther || "")'
+                            }
+                        }),
+                        '<!-- /ko -->'
+                    ])),
                     '<!-- /ko -->',
 
                     '<!-- ko if: $data.profile.profile.userdata.fundingSource &&  profile.profile.userdata.fundingSource.length > 0 -->',
