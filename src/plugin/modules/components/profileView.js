@@ -363,5 +363,5 @@ define([
             viewModel: viewModel
         };
     }
-    ko.components.register('profile-view', component());
+    return component;
 });
