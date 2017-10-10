@@ -32,7 +32,7 @@ define([
     'knockout-plus',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    'kb_plugin_auth2-client'
+    'kb_plugin_user-profile'
 ], function (
     ko,
     html,
