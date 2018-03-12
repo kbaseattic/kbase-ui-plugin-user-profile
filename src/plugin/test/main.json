@@ -1,0 +1,75 @@
+[
+    {
+        "description": "Unauthenticated Profile View",
+        "specs": [
+            {
+                "description": "should get the signin page",
+                "url": "/#people/eapearson",
+                "baseSelector": [
+                    {
+                        "type": "plugin",
+                        "value": "auth2-client"
+                    },
+                    {
+                        "type": "component",
+                        "value": "login-view"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "selector": [
+                            {
+                                "type": "field",
+                                "value": "requested-path"
+                            }
+                        ],
+                        "wait": 10000,
+                        "text": "people/eapearson"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "description": "Profile spec",
+        "disabled": true,
+        "specs": [
+            {
+                "description": "View a profile",
+                "url" : "/#people/eapearson",
+                "baseSelector": [
+                    {
+                        "type": "plugin",
+                        "value": "user-profile"
+                    },
+                    {
+                        "type": "component",
+                        "value": "profile-view"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "selector": [
+                            {
+                                "type": "panel",
+                                "value": "profile"
+                            }
+                        ],
+                        "wait": 30000
+                    },
+                    {
+                        "selector": [
+                            [
+                                {
+                                    "type": "field",
+                                    "value": "eapearson"
+                                }
+                            ]
+                        ],
+                        "exists": true
+                    }
+                ]
+            }
+        ]
+    }
+]

@@ -49,9 +49,60 @@ define([
         ul = t('ul'),
         li = t('li');
 
-    function template() {
+    /*
+        incoming params is a raw user profile. We turn that into a view model
+    */
+    function viewModel(params) {
+        // just a parasitic widget... var gravatarUrl = ko.pureComputed(function () {
+        var userProfile = params.profile;
+        if (!userProfile.profile) {
+            userProfile.profile = {
+                userdata: {}
+            };
+        } else if (!userProfile.profile.userdata) {
+            userProfile.profile.userdata = {};
+        }
+        var gravatarUrl = ko.pureComputed(function () {
+            return buildAvatarUrl(userProfile);
+        });
+        var researchStatementDisplay = ko.pureComputed(function () {
+            var text = userProfile.profile.userdata.researchStatement;
+            if (!text) {
+                return '';
+            }
+            return text.replace(/\n/g, '<br>');
+        });
+        return {
+            profile: params.profile,
+            gravatarUrl: gravatarUrl,
+            researchStatementDisplay: researchStatementDisplay
+        };
+
+    }   
+    
+    function buildAvatarUrl(profile) {
+        switch (profile.profile.userdata.avatarOption || 'gravatar') {
+        case 'gravatar':
+            var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
+            var gravatarHash = profile.profile.synced.gravatarHash;
+            if (gravatarHash) {
+                return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=500&amp;r=pg&d=' + gravatarDefault;
+            } else {
+                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+            }
+        case 'silhouette':
+        case 'mysteryman':
+        default:
+            return Plugin.plugin.fullPath + '/images/nouserpic.png';
+        }
+    }
+
+    function buildProfilePanel() {
         return BS.buildPanel({
             type: 'default',
+            attributes: {
+                dataKbasePanel: 'profile'
+            },
             title: span([
                 span({
                     dataBind: {
@@ -60,6 +111,7 @@ define([
                 }),
                 ' (',
                 span({
+                    dataKbaseField: 'username',
                     dataBind: {
                         text: 'profile.user.username'
                     }
@@ -93,6 +145,18 @@ define([
                             text: 'profile.user.realname'
                         }
                     }),
+                    // div([
+                    //     'username: ' ,
+                    //     span({
+                    //         style: {
+                    //             fontFamily: 'monospace'
+                    //         },
+                    //         dataBind: {
+                    //             text: 'profile.user.username'
+                    //         }
+                    //     })
+                    // ]),
+                   
 
                     '<!-- ko if: $data.profile.profile.userdata -->',
                     div({
@@ -309,52 +373,10 @@ define([
         });
     }
 
-    function buildAvatarUrl(profile) {
-        switch (profile.profile.userdata.avatarOption || 'gravatar') {
-        case 'gravatar':
-            var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
-            var gravatarHash = profile.profile.synced.gravatarHash;
-            if (gravatarHash) {
-                return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
-            } else {
-                return Plugin.plugin.fullPath + '/images/nouserpic.png';
-            }
-        case 'silhouette':
-        case 'mysteryman':
-        default:
-            return Plugin.plugin.fullPath + '/images/nouserpic.png';
-        }
-    }
-
-    /*
-        incoming params is a raw user profile. We turn that into a view model
-    */
-    function viewModel(params) {
-        // just a parasitic widget... var gravatarUrl = ko.pureComputed(function () {
-        var userProfile = params.profile;
-        if (!userProfile.profile) {
-            userProfile.profile = {
-                userdata: {}
-            };
-        } else if (!userProfile.profile.userdata) {
-            userProfile.profile.userdata = {};
-        }
-        var gravatarUrl = ko.pureComputed(function () {
-            return buildAvatarUrl(userProfile);
-        });
-        var researchStatementDisplay = ko.pureComputed(function () {
-            var text = userProfile.profile.userdata.researchStatement;
-            if (!text) {
-                return '';
-            }
-            return text.replace(/\n/g, '<br>');
-        });
-        return {
-            profile: params.profile,
-            gravatarUrl: gravatarUrl,
-            researchStatementDisplay: researchStatementDisplay
-        };
-
+    function template() {
+        return div({
+            dataKbaseComponent: 'profile-view'
+        }, buildProfilePanel());
     }
 
     function component() {
@@ -363,5 +385,7 @@ define([
             viewModel: viewModel
         };
     }
+
+    // note that this component is provided as a globally known component: 'profile-view'
     return component;
 });

@@ -20,7 +20,8 @@ define([
                 var div = html.tag('div');
                 var panel = div({
                     class: 'kbase-view kbase-user-page-view container-fluid',
-                    'data-kbase-view': 'social'
+                    dataKbaseView: 'social',
+                    dataKbasePlugin: 'user-profile'
                 }, [
                     div({ class: 'row' }, [
                         div({ class: 'col-sm-9' }, [
