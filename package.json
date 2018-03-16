@@ -1,8 +1,14 @@
 {
     "name": "kbase-ui-plugin-user-profile",
     "version": "0.0.1",
-    "keywords": ["kbase", "plugin"],
+    "keywords": [
+        "kbase",
+        "plugin"
+    ],
     "author": "Erik Pearson",
     "contributors": [],
-    "dependencies": {}
+    "dependencies": {},
+    "devDependencies": {
+        "eslint": "4.18.2"
+    }
 }

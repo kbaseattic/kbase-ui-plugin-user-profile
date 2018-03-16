@@ -17,7 +17,6 @@ define([
 
     var t = html.tag,
         div = t('div'),
-        span = t('span'),
         a = t('a'),
         form = t('form'),
         label = t('label'),
@@ -136,8 +135,8 @@ define([
                 refresh();
             } else {
                 userProfileClient.filter_users({
-                        filter: searchText
-                    })
+                    filter: searchText
+                })
                     .then(function (users) {
                         users.sort(function (a, b) {
                             if (a.realname) {
@@ -174,7 +173,7 @@ define([
             renderLayout();
         }
 
-        function start(params) {
+        function start() {
             var control = container.querySelector('[data-field="search_text"] input');
             control.addEventListener('keyup', function (e) {
                 // Reset on search cancel

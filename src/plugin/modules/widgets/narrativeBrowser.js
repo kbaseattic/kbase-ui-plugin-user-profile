@@ -151,7 +151,7 @@ define([
         });
         sortIt();
 
-        var filteredNarratives = narratives.filter(function (narrative, index) {
+        var filteredNarratives = narratives.filter(function (narrative) {
             var text = searchText();
             if (!text || text.length === 0) {
                 return true;
@@ -520,7 +520,7 @@ define([
         });
     }
 
-    function buildButton(iconClass, func, tooltip) {
+    function buildButton(iconClass, func) {
         return button({
             dataBind: {
                 click: func
@@ -554,8 +554,6 @@ define([
                         display: 'inline-block',
                         verticalAlign: 'middle',
                         margin: '6px 0 0 4px'
-                            // lineHeight: '1.429',
-                            // height: '100%'
                     }
                 }, [
                     span({
@@ -737,10 +735,10 @@ define([
             });
         }
 
-        function getMyNarratives(currentUsername) {
+        function getMyNarratives() {
             return narrativeServiceClient.callFunc('list_narratives', [{
-                    type: 'mine'
-                }])
+                type: 'mine'
+            }])
                 .then(function (result) {
                     return enhanceNarratives(result[0].narratives);
                 })
@@ -749,11 +747,11 @@ define([
                 });
         }
 
-        function getTheirNarratives(username, currentUsername) {
+        function getTheirNarratives(username) {
             return Promise.all([
-                    narrativeServiceClient.callFunc('list_narratives', [{
-                        type: 'shared'
-                    }])
+                narrativeServiceClient.callFunc('list_narratives', [{
+                    type: 'shared'
+                }])
                     .then(function (result) {
                         return enhanceNarratives(result[0].narratives);
                     })
@@ -764,9 +762,9 @@ define([
                             );
                         });
                     }),
-                    narrativeServiceClient.callFunc('list_narratives', [{
-                        type: 'public'
-                    }])
+                narrativeServiceClient.callFunc('list_narratives', [{
+                    type: 'public'
+                }])
                     .then(function (result) {
                         return enhanceNarratives(result[0].narratives);
                     })
@@ -778,7 +776,7 @@ define([
                                 );
                             });
                     })
-                ])
+            ])
                 .spread(function (shared, publicNarratives) {
                     // var total = shared[0].narratives.concat(publicNarratives[0].narratives);
                     var total = shared;
@@ -798,63 +796,63 @@ define([
                 });
         }
 
-        function getTheirNarrativesIncludingCommonShared(username, currentUsername) {
-            return Promise.all([
-                    narrativeServiceClient.callFunc('list_narratives', [{
-                        type: 'shared'
-                    }])
-                    .then(function (result) {
-                        return enhanceNarratives(result[0].narratives);
-                    })
-                    .then(function (narratives) {
-                        return addPermissions(narratives, currentUsername)
-                            .filter(function (narrative) {
-                                return (
-                                    narrative.owner === username ||
-                                    narrative.owner === currentUsername ||
-                                    narrative.permissions.some(function (perm) {
-                                        perm.username === currentUsername;
-                                    })
-                                );
-                            });
-                    }),
-                    narrativeServiceClient.callFunc('list_narratives', [{
-                        type: 'public'
-                    }])
-                    .then(function (result) {
-                        return enhanceNarratives(result[0].narratives);
-                    })
-                    .then(function (narratives) {
-                        return addPermissions(narratives, currentUsername)
-                            .filter(function (narrative) {
-                                return (
-                                    narrative.owner === username ||
-                                    narrative.owner === currentUsername ||
-                                    narrative.permissions.some(function (perm) {
-                                        perm.username === currentUsername;
-                                    })
-                                );
-                            });
-                    })
-                ])
-                .spread(function (shared, publicNarratives) {
-                    // var total = shared[0].narratives.concat(publicNarratives[0].narratives);
-                    var total = shared;
-                    var totalMap = {};
-                    total.forEach(function (narrative) {
-                        totalMap[narrative.object.ref] = narrative;
-                    });
-                    publicNarratives.forEach(function (narrative) {
-                        if (totalMap[narrative.object.ref]) {
-                            totalMap[narrative.object.ref].public = true;
-                        } else {
-                            narrative.public = true;
-                            total.push(narrative);
-                        }
-                    });
-                    return total;
-                });
-        }
+        // function getTheirNarrativesIncludingCommonShared(username, currentUsername) {
+        //     return Promise.all([
+        //         narrativeServiceClient.callFunc('list_narratives', [{
+        //             type: 'shared'
+        //         }])
+        //             .then(function (result) {
+        //                 return enhanceNarratives(result[0].narratives);
+        //             })
+        //             .then(function (narratives) {
+        //                 return addPermissions(narratives, currentUsername)
+        //                     .filter(function (narrative) {
+        //                         return (
+        //                             narrative.owner === username ||
+        //                             narrative.owner === currentUsername ||
+        //                             narrative.permissions.some(function (perm) {
+        //                                 perm.username === currentUsername;
+        //                             })
+        //                         );
+        //                     });
+        //             }),
+        //         narrativeServiceClient.callFunc('list_narratives', [{
+        //             type: 'public'
+        //         }])
+        //             .then(function (result) {
+        //                 return enhanceNarratives(result[0].narratives);
+        //             })
+        //             .then(function (narratives) {
+        //                 return addPermissions(narratives, currentUsername)
+        //                     .filter(function (narrative) {
+        //                         return (
+        //                             narrative.owner === username ||
+        //                             narrative.owner === currentUsername ||
+        //                             narrative.permissions.some(function (perm) {
+        //                                 perm.username === currentUsername;
+        //                             })
+        //                         );
+        //                     });
+        //             })
+        //     ])
+        //         .spread(function (shared, publicNarratives) {
+        //             // var total = shared[0].narratives.concat(publicNarratives[0].narratives);
+        //             var total = shared;
+        //             var totalMap = {};
+        //             total.forEach(function (narrative) {
+        //                 totalMap[narrative.object.ref] = narrative;
+        //             });
+        //             publicNarratives.forEach(function (narrative) {
+        //                 if (totalMap[narrative.object.ref]) {
+        //                     totalMap[narrative.object.ref].public = true;
+        //                 } else {
+        //                     narrative.public = true;
+        //                     total.push(narrative);
+        //                 }
+        //             });
+        //             return total;
+        //         });
+        // }
 
         function addPermissions(narratives, currentUsername) {
             return Promise.try(function () {
@@ -867,8 +865,8 @@ define([
                     };
                 });
                 return workspaceClient.callFunc('get_permissions_mass', [{
-                        workspaces: permParams
-                    }])
+                    workspaces: permParams
+                }])
                     .then(function (result) {
                         var permissions = result[0].perms;
                         for (var i = 0; i < permissions.length; i++) {
@@ -896,10 +894,10 @@ define([
 
         function enhanceNarratives(narratives) {
             return narratives.map(function (item) {
-                    item.object = serviceUtils.objectInfoToObject(item.nar);
-                    item.workspace = serviceUtils.workspaceInfoToObject(item.ws);
-                    return item;
-                })
+                item.object = serviceUtils.objectInfoToObject(item.nar);
+                item.workspace = serviceUtils.workspaceInfoToObject(item.ws);
+                return item;
+            })
                 .filter(function (narrative) {
                     return (narrative.workspace.metadata.is_temporary !== 'true');
                 })
@@ -933,10 +931,10 @@ define([
             //     token: runtime.service('session').getAuthToken()
             // }));
             return workspaceClient.callFunc('get_object_info3', [{
-                    objects: firstVersions,
-                    includeMetadata: 1,
-                    ignoreErrors: 1
-                }])
+                objects: firstVersions,
+                includeMetadata: 1,
+                ignoreErrors: 1
+            }])
                 .spread(function (firsts) {
                     firsts.infos.forEach(function (first, index) {
                         var firstNarrative = serviceUtils.objectInfoToObject(first);
@@ -972,13 +970,13 @@ define([
                 class: 'well'
             }, html.loading('Loading narratives...'));
             return query.then(function (found) {
-                    // map the narratives to objects...
-                    narratives = found;
-                    // now get the creation date ...
-                    if (narratives.length > 0) {
-                        return addNarrativeCreation(narratives);
-                    }
-                })
+                // map the narratives to objects...
+                narratives = found;
+                // now get the creation date ...
+                if (narratives.length > 0) {
+                    return addNarrativeCreation(narratives);
+                }
+            })
                 .then(function () {
                     render();
 

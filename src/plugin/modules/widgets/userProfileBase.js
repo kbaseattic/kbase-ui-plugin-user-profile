@@ -381,9 +381,9 @@ define([
             }
         },
         setInitialState: {
-            value: function (options) {
+            value: function () {
                 // The base method just resolves immediately (well, on the next turn.) 
-                return new Promise(function (resolve, reject, notify) {
+                return new Promise(function (resolve) {
                     resolve();
                 });
             }
@@ -391,12 +391,12 @@ define([
         // EVENT HANDLERS
 
         onLoggedIn: {
-            value: function (auth) {
+            value: function () {
                 this.setupAuth();
                 this.setup();
                 this.setInitialState({
-                        force: true
-                    })
+                    force: true
+                })
                     .then(function () {
                         this.refresh();
                         return null;
@@ -465,7 +465,7 @@ define([
                 if (!template) {
                     throw 'Template ' + name + ' not found';
                 }
-                var context = context ? context : this.createTemplateContext();
+                context = context ? context : this.createTemplateContext();
                 return template.render(context);
             }
         },
@@ -511,7 +511,7 @@ define([
         niceElapsedTime: {
             value: function (dateString) {
                 // need to strip off the timezone from the string.
-                var isoRE = /(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)([\+\-])(\d\d\d\d)/;
+                var isoRE = /(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)([+-])(\d\d\d\d)/;
                 var dateParts = isoRE.exec(dateString);
                 if (!dateParts) {
                     return '** Invalid Date Format **';

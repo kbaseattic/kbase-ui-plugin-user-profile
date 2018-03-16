@@ -87,7 +87,7 @@ define([
                     Object.keys(vmNode.on).forEach(function (eventType) {
                         var handler = vmNode.on[eventType];
                         handler.bind(vmNode);
-                        vmNode.node.addEventListener(eventType, function (e) {
+                        vmNode.node.addEventListener(eventType, function () {
                             try {
                                 handler();
                             } catch (ex) {
