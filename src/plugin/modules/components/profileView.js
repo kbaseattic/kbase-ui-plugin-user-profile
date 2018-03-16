@@ -101,7 +101,7 @@ define([
         return BS.buildPanel({
             type: 'default',
             attributes: {
-                dataKbasePanel: 'profile'
+                dataKBTesthookPanel: 'profile'
             },
             title: span([
                 span({
@@ -111,7 +111,7 @@ define([
                 }),
                 ' (',
                 span({
-                    dataKbaseField: 'username',
+                    dataKBTesthookField: 'username',
                     dataBind: {
                         text: 'profile.user.username'
                     }
@@ -375,7 +375,7 @@ define([
 
     function template() {
         return div({
-            dataKbaseComponent: 'profile-view'
+            dataKBTesthookComponent: 'profile-view'
         }, buildProfilePanel());
     }
 

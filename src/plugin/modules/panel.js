@@ -14,14 +14,14 @@ define([
             runtime = config.runtime,
             widgetSet = WidgetSet.make({ runtime: runtime });
 
-        function renderPanel(params) {
+        function renderPanel() {
             return new Promise(function (resolve) {
                 // Render panel
                 var div = html.tag('div');
                 var panel = div({
                     class: 'kbase-view kbase-user-page-view container-fluid',
                     dataKbaseView: 'social',
-                    dataKbasePlugin: 'user-profile'
+                    dataKBTesthookPlugin: 'user-profile'
                 }, [
                     div({ class: 'row' }, [
                         div({ class: 'col-sm-9' }, [

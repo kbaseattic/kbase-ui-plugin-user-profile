@@ -32,11 +32,10 @@
     },
     {
         "description": "Profile spec",
-        "disabled": true,
+        "disabled": false,
         "specs": [
             {
                 "description": "View a profile",
-                "url" : "/#people/eapearson",
                 "baseSelector": [
                     {
                         "type": "plugin",
@@ -47,26 +46,36 @@
                         "value": "profile-view"
                     }
                 ],
+                
                 "tasks": [
+                    {
+                        "title": "login and go to dashboard",
+                        "subtask": "dashboard"
+                    },
+                   
+
+                    {
+                        "selector": [],
+                        "action": "navigate",
+                        "params": {
+                            "url": "/#people/eapearson"
+                        }
+                    },                                     
                     {
                         "selector": [
                             {
                                 "type": "panel",
                                 "value": "profile"
+                            },
+                            {
+                                "type": "field",
+                                "value": "username"
                             }
                         ],
-                        "wait": 30000
-                    },
-                    {
-                        "selector": [
-                            [
-                                {
-                                    "type": "field",
-                                    "value": "eapearson"
-                                }
-                            ]
-                        ],
-                        "exists": true
+                        "waitUntilText": {
+                            "wait": 5000,
+                            "value": "eapearson"
+                        }
                     }
                 ]
             }
