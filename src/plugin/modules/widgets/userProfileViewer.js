@@ -1,10 +1,10 @@
 define([
     'knockout-plus',
-    'kb_service/client/userProfile',
+    'kb_common/jsonRpc/genericClient',
     'kb_common/html'
 ], function (
     ko,
-    UserProfileService,
+    GenericClient,
     html
 ) {
     'use strict';
@@ -17,11 +17,13 @@ define([
 
         // SUPPORT
         function getProfile(username) {
-            var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
+            var userProfileClient = new GenericClient({
+                module: 'UserProfile',
+                url: runtime.config('services.user_profile.url'),
                 token: runtime.service('session').getAuthToken()
             });
-            return userProfileClient.get_user_profile([username])
-                .then(function (profiles) {
+            return userProfileClient.callFunc('get_user_profile', [[username]])
+                .spread(function (profiles) {
                     if (profiles.length === 0) {
                         throw new Error('Profile not found');
                     }
