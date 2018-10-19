@@ -1,6 +1,6 @@
 define([
     'bluebird',
-    'kb_common/html',
+    'kb_lib/html',
     'kb_widget/widgetSet'
 ], function (
     Promise,
@@ -33,12 +33,12 @@ define([
                     ]),
                     div({ class: 'row' }, [
                         div({ class: 'col-sm-12' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_narrativeBrowser') })
+                            div({ id: widgetSet.addWidget('kb_userProfile_narratives') })
                         ])
                     ]),
                     div({ class: 'row' }, [
                         div({ class: 'col-sm-12' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_collaboratorNetwork') })
+                            div({ id: widgetSet.addWidget('kb_userProfile_collaborators') })
                         ])
                     ])
                 ]);
@@ -49,7 +49,7 @@ define([
             });
         }
 
-        // API 
+        // API
         function attach(node) {
             return Promise.try(function () {
                 mount = node;

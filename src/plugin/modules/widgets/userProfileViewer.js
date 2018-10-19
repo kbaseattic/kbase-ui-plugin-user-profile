@@ -1,14 +1,17 @@
 define([
-    'knockout-plus',
-    'kb_common/jsonRpc/genericClient',
-    'kb_common/html'
+    'knockout',
+    'kb_lib/jsonRpc/genericClient',
+    'kb_lib/html',
+    '../components/profileView'
 ], function (
     ko,
     GenericClient,
-    html
+    html,
+    ProfileViewComponent
 ) {
     'use strict';
-    var t = html.tag,
+
+    const t = html.tag,
         div = t('div');
 
     function factory(config) {
@@ -43,7 +46,7 @@ define([
                     container.innerHTML = div({
                         dataBind: {
                             component: {
-                                name: '"profile-view"',
+                                name: ProfileViewComponent.quotedName(),
                                 params: {
                                     runtime: 'runtime',
                                     profile: 'profile'

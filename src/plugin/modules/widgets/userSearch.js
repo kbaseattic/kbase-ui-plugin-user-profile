@@ -1,16 +1,12 @@
 define([
-    'jquery',
-    'bluebird',
-    './userProfileBase',
     'kb_service/client/userProfile',
-    'kb_common/html',
-    'kb_common/bootstrapUtils'
+    'kb_lib/html',
+    'kb_lib/htmlBuilders',
+    'kb_lib/htmlBootstrapBuilders'
 ], function (
-    $,
-    Promise,
-    SocialWidget,
     UserProfileService,
     html,
+    build,
     BS
 ) {
     'use strict';
@@ -111,12 +107,12 @@ define([
                             style: {
                                 display: 'block'
                             }
-                        }, result.realname),
+                        }, build.safeText(result.realname)),
                         div({
                             style: {
                                 fontStyle: 'italic'
                             }
-                        }, result.username)
+                        }, build.safeText(result.username))
                     ])
                 ]);
             })))));

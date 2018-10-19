@@ -23,17 +23,13 @@ install:
             css: true
             type: factory
         -
-            module: widgets/collaboratorNetwork
-            id: kb_userProfile_collaboratorNetwork
-            type: object
+            module: widgets/narratives
+            id: kb_userProfile_narratives
+            type: es6
         -
-            module: widgets/narrativeBrowser
-            id: kb_userProfile_narrativeBrowser
-            type: factory
-    ko-components:
-        -
-            name: profile-view
-            module: components/profileView
+            module: widgets/collaborators
+            id: kb_userProfile_collaborators
+            type: es6
     routes:
         -
             path: ['people', {type: param, name: username}]

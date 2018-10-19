@@ -3,6 +3,7 @@ define([
 ], function (
     html
 ) {
+    'use strict';
     function ViewModel(config) {
         var vm = config.model;
         if (!vm) {

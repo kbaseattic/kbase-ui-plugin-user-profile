@@ -29,18 +29,70 @@ preferences
 
 */
 define([
-    'knockout-plus',
-    'kb_common/html',
-    'kb_common/bootstrapUtils',
+    'knockout',
+    'kb_knockout/registry',
+    'kb_knockout/lib/generators',
+    'kb_lib/html',
+    'kb_lib/htmlBuilders',
+    'kb_lib/htmlBootstrapBuilders',
     'kb_plugin_user-profile'
 ], function (
     ko,
+    reg,
+    gen,
     html,
+    build,
     BS,
     Plugin
 ) {
     'use strict';
-    var t = html.tag,
+
+    /*
+        incoming params is a raw user profile. We turn that into a view model
+    */
+    class ViewModel {
+        constructor(params) {
+            this.userProfile = params.profile;
+            if (!this.userProfile.profile) {
+                this.userProfile.profile = {
+                    userdata: {}
+                };
+            } else if (!this.userProfile.profile.userdata) {
+                this.userProfile.profile.userdata = {};
+            }
+            this.gravatarUrl = ko.pureComputed(() => {
+                return this.buildAvatarUrl();
+            });
+            this.researchStatementDisplay = ko.pureComputed(() => {
+                var text = build.safeText(this.userProfile.profile.userdata.researchStatement);
+                if (!text) {
+                    return '';
+                }
+                return text.replace(/\n/g, '<br>');
+            });
+        }
+
+        buildAvatarUrl() {
+            switch (this.userProfile.profile.userdata.avatarOption || 'gravatar') {
+            case 'gravatar':
+                var gravatarDefault = this.userProfile.profile.userdata.gravatarDefault || 'identicon';
+                var gravatarHash = this.userProfile.profile.synced.gravatarHash;
+                if (gravatarHash) {
+                    return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=500&amp;r=pg&d=' + gravatarDefault;
+                } else {
+                    return Plugin.plugin.fullPath + '/images/nouserpic.png';
+                }
+            case 'silhouette':
+            case 'mysteryman':
+            default:
+                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+            }
+        }
+    }
+
+    // VIEW
+
+    const t = html.tag,
         div = t('div'),
         span = t('span'),
         p = t('p'),
@@ -49,52 +101,168 @@ define([
         ul = t('ul'),
         li = t('li');
 
-    /*
-        incoming params is a raw user profile. We turn that into a view model
-    */
-    function viewModel(params) {
-        // just a parasitic widget... var gravatarUrl = ko.pureComputed(function () {
-        var userProfile = params.profile;
-        if (!userProfile.profile) {
-            userProfile.profile = {
-                userdata: {}
-            };
-        } else if (!userProfile.profile.userdata) {
-            userProfile.profile.userdata = {};
-        }
-        var gravatarUrl = ko.pureComputed(function () {
-            return buildAvatarUrl(userProfile);
-        });
-        var researchStatementDisplay = ko.pureComputed(function () {
-            var text = userProfile.profile.userdata.researchStatement;
-            if (!text) {
-                return '';
-            }
-            return text.replace(/\n/g, '<br>');
-        });
-        return {
-            profile: params.profile,
-            gravatarUrl: gravatarUrl,
-            researchStatementDisplay: researchStatementDisplay
-        };
+    function buildResearchInterests() {
+        return [
+            h3('Research Interests'),
+            div({
+                dataBind: {
+                    visible: 'researchInterests.length === 0'
+                },
+                style: {
+                    fontStyle: 'italic'
+                }
+            }, 'No research interests selected'),
+            ul({
+                dataBind: {
+                    foreach: 'researchInterests'
+                }
+            }, li([
+                span({
+                    dataBind: {
+                        text: '$data'
+                    }
+                }),
+                gen.if('$data === "Other"',
+                    span({
+                        dataBind: {
+                            text: '" - " + ($component.userProfile.profile.userdata.researchInterestsOther || "")'
+                        }
+                    }))
+            ]))
+        ];
+    }
 
-    }   
-    
-    function buildAvatarUrl(profile) {
-        switch (profile.profile.userdata.avatarOption || 'gravatar') {
-        case 'gravatar':
-            var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
-            var gravatarHash = profile.profile.synced.gravatarHash;
-            if (gravatarHash) {
-                return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=500&amp;r=pg&d=' + gravatarDefault;
-            } else {
-                return Plugin.plugin.fullPath + '/images/nouserpic.png';
-            }
-        case 'silhouette':
-        case 'mysteryman':
-        default:
-            return Plugin.plugin.fullPath + '/images/nouserpic.png';
-        }
+    function buildFundingSource() {
+        return [
+            h3('Primary Funding Source'),
+            div({
+                dataBind: {
+                    text: 'fundingSource'
+                }
+            })
+        ];
+    }
+
+    function buildAffiliations() {
+        return [
+            h3('Affiliations'),
+            div({
+                dataBind: {
+                    visible: 'affiliations.length === 0'
+                },
+                style: {
+                    fontStyle: 'italic'
+                }
+            }, 'No affiliations provided'),
+            ul({
+                dataBind: {
+                    visible: 'affiliations.length > 0',
+                    foreach: 'affiliations'
+                }
+            }, li([
+                p([
+                    span({
+                        dataBind: {
+                            text: 'title'
+                        }
+                    }),
+                    ' (',
+                    span({
+                        dataBind: {
+                            text: 'started'
+                        }
+                    }),
+                    ' - ',
+                    gen.if('$data.ended',
+                        span({
+                            dataBind: {
+                                text: 'ended'
+                            }
+                        }),
+                        span('present')),
+                    ') ',
+                    ' @ ',
+                    span({
+                        dataBind: {
+                            text: 'organization'
+                        }
+                    })
+                ])
+            ]))
+        ];
+    }
+
+    function buildResearchStatement() {
+        return [
+            h3('Research or Personal Statement'),
+            div({
+                dataBind: {
+                    visible: '$component.researchStatementDisplay().length === 0'
+                },
+                style: {
+                    fontStyle: 'italic'
+                }
+            }, 'No research statement provided'),
+            div({
+                class: 'well',
+                dataBind: {
+                    visible: '$component.researchStatementDisplay().length > 0',
+                    html: '$component.researchStatementDisplay()'
+                }
+            })
+        ];
+    }
+
+    function buildLocation() {
+        gen.if('country === "United States"', [
+            div([
+                span({
+                    dataBind: {
+                        text: 'city'
+                    }
+                }),
+                ', ',
+                span({
+                    dataBind: {
+                        text: 'state'
+                    }
+                }),
+                span({
+                    dataBind: {
+                        text: 'postalCode'
+                    },
+                    style: {
+                        marginLeft: '10px'
+                    }
+                })
+            ]),
+            div({
+                dataBind: {
+                    text: 'country'
+                }
+            })
+        ], [
+            div({
+                dataBind: {
+                    text: 'city'
+                }
+            }),
+            div({
+                dataBind: {
+                    text: 'state'
+                }
+            }),
+            div({
+                dataBind: {
+                    text: 'postalCode'
+                }
+            }),
+            div({
+                dataBind: {
+                    text: 'country'
+                }
+            })
+        ]);
     }
 
     function buildProfilePanel() {
@@ -106,14 +274,14 @@ define([
             title: span([
                 span({
                     dataBind: {
-                        text: 'profile.user.realname'
+                        text: 'userProfile.user.realname'
                     }
                 }),
                 ' (',
                 span({
                     dataKBTesthookField: 'username',
                     dataBind: {
-                        text: 'profile.user.username'
+                        text: 'userProfile.user.username'
                     }
                 }),
                 ')'
@@ -142,232 +310,60 @@ define([
                             fontSize: '120%'
                         },
                         dataBind: {
-                            text: 'profile.user.realname'
+                            text: 'userProfile.user.realname'
                         }
                     }),
-                    // div([
-                    //     'username: ' ,
-                    //     span({
-                    //         style: {
-                    //             fontFamily: 'monospace'
-                    //         },
-                    //         dataBind: {
-                    //             text: 'profile.user.username'
-                    //         }
-                    //     })
-                    // ]),
-                   
 
-                    '<!-- ko if: $data.profile.profile.userdata -->',
-                    div({
-                        style: {
-                            fontStyle: 'italic',
-                            marginBottom: '1em'
-                        }
-                    }, [
-                        '<!-- ko if: profile.profile.userdata.jobTitle !== "Other" -->',
-                        span({
-                            dataBind: {
-                                text: 'profile.profile.userdata.jobTitle'
-                            }
-                        }),
-                        '<!-- /ko -->',
-                        '<!-- ko if: profile.profile.userdata.jobTitle === "Other" -->',
-                        span({
-                            dataBind: {
-                                text: 'profile.profile.userdata.jobTitleOther'
-                            }
-                        }),
-                        '<!-- /ko -->'
-                    ]),
-                    div({
-                        dataBind: {
-                            text: 'profile.profile.userdata.organization'
-                        }
-                    }),
-                    div({
-                        dataBind: {
-                            text: 'profile.profile.userdata.department'
-                        }
-                    }),
-                    // LOCATION
-                    div({
-                        dataBind: {
-                            if: 'profile.profile.userdata.country === "United States"'
-                        }
-                    }, [
-                        div([
-                            span({
-                                dataBind: {
-                                    text: 'profile.profile.userdata.city'
-                                }
-                            }),
-                            ', ',
-                            span({
-                                dataBind: {
-                                    text: 'profile.profile.userdata.state'
-                                }
-                            }),
-                            span({
-                                dataBind: {
-                                    text: 'profile.profile.userdata.postalCode'
-                                },
+                    gen.if('$data.userProfile.profile.userdata',
+                        gen.with('$data.userProfile.profile.userdata', [
+                            div({
                                 style: {
-                                    marginLeft: '10px'
+                                    fontStyle: 'italic',
+                                    marginBottom: '1em'
                                 }
-                            })
-                        ]),
-                        div({
-                            dataBind: {
-                                text: 'profile.profile.userdata.country'
-                            }
-                        })
-                    ]),
+                            }, [
+                                gen.if('jobTitle',
+                                    gen.if('jobTitle !== "Other"',
+                                        span({
+                                            dataBind: {
+                                                text: 'jobTitle'
+                                            }
+                                        }),
+                                        span({
+                                            dataBind: {
+                                                text: 'jobTitleOther'
+                                            }
+                                        })))
+                            ]),
 
-                    div({
-                        dataBind: {
-                            if: 'profile.profile.userdata.country !== "United States"'
-                        }
-                    }, [
-                        div({
-                            dataBind: {
-                                text: 'profile.profile.userdata.city'
-                            }
-                        }),
-                        div({
-                            dataBind: {
-                                text: 'profile.profile.userdata.state'
-                            }
-                        }),
-                        div({
-                            dataBind: {
-                                text: 'profile.profile.userdata.postalCode'
-                            }
-                        }),
-                        div({
-                            dataBind: {
-                                text: 'profile.profile.userdata.country'
-                            }
-                        })
-                    ]),
-                    '<!-- ko if: $data.profile.profile.userdata.researchInterests &&  profile.profile.userdata.researchInterests.length > 0 -->',
-                    h3('Research Interests'),
-                    div({
-                        dataBind: {
-                            visible: 'profile.profile.userdata.researchInterests.length === 0'
-                        },
-                        style: {
-                            fontStyle: 'italic'
-                        }
-                    }, 'No research interests selected'),
-                    ul({
-                        dataBind: {
-                            foreach: 'profile.profile.userdata.researchInterests'
-                        }
-                    }, li([
-                        span({
-                            dataBind: {
-                                text: '$data'
-                            }
-                        }),
-                        '<!-- ko if: $data === "Other" -->',
-                        span({
-                            dataBind: {
-                                text: '" - " + ($component.profile.profile.userdata.researchInterestsOther || "")'
-                            }
-                        }),
-                        '<!-- /ko -->'
-                    ])),
-                    '<!-- /ko -->',
+                            gen.if('$data.organization',
+                                div({
+                                    dataBind: {
+                                        text: 'organization'
+                                    }
+                                })),
 
-                    '<!-- ko if: $data.profile.profile.userdata.fundingSource &&  profile.profile.userdata.fundingSource.length > 0 -->',
-                    div({
-                        dataBind: {
-                            if: 'profile.profile.userdata.fundingSource'
-                        }
-                    }, [
-                        h3('Primary Funding Source'),
-                        div({
-                            dataBind: {
-                                text: 'profile.profile.userdata.fundingSource'
-                            }
-                        })
-                    ]),
-                    '<!-- /ko -->',
+                            gen.if('$data.department',
+                                div({
+                                    dataBind: {
+                                        text: 'department'
+                                    }
+                                })),
 
-                    '<!-- ko if: $data.profile.profile.userdata.affiliations &&  profile.profile.userdata.affiliations.length > 0 -->',
-                    h3('Affiliations'),
-                    div({
-                        dataBind: {
-                            visible: 'profile.profile.userdata.affiliations.length === 0'
-                        },
-                        style: {
-                            fontStyle: 'italic'
-                        }
-                    }, 'No affiliations provided'),
-                    ul({
-                        dataBind: {
-                            visible: 'profile.profile.userdata.affiliations.length > 0',
-                            foreach: 'profile.profile.userdata.affiliations'
-                        }
-                    }, li([
-                        p({
+                            buildLocation(),
 
-                        }, [
-                            span({
-                                dataBind: {
-                                    text: 'title'
-                                }
-                            }),
-                            ' (',
-                            span({
-                                dataBind: {
-                                    text: 'started'
-                                }
-                            }),
-                            ' - ',
-                            '<!-- ko if: $data.ended -->',
-                            span({
-                                dataBind: {
-                                    text: 'ended'
-                                }
-                            }),
-                            '<!-- /ko -->',
-                            '<!-- ko if: !$data.ended -->',
-                            span({
+                            gen.if('$data.researchInterests && $data.researchInterests.length > 0',
+                                buildResearchInterests()),
 
-                            }, 'present'),
-                            '<!-- /ko -->',
-                            ') ',
-                            ' @ ',
-                            span({
-                                dataBind: {
-                                    text: 'organization'
-                                }
-                            })
-                        ])
-                    ])),
-                    '<!-- /ko -->',
+                            gen.if('$data.fundingSource && $data.fundingSource.length > 0',
+                                buildFundingSource()),
 
-                    '<!-- ko if: researchStatementDisplay().length > 0 -->',
-                    h3('Research or Personal Statement'),
-                    div({
-                        dataBind: {
-                            visible: 'researchStatementDisplay().length === 0'
-                        },
-                        style: {
-                            fontStyle: 'italic'
-                        }
-                    }, 'No research statement provided'),
-                    div({
-                        class: 'well',
-                        dataBind: {
-                            visible: 'researchStatementDisplay().length > 0',
-                            html: 'researchStatementDisplay()'
-                        }
-                    }),
-                    '<!-- /ko -->',
-                    '<!-- /ko -->'
+                            gen.if('$data.affiliations &&  $data.affiliations.length > 0',
+                                buildAffiliations()),
+
+                            gen.if('$component.researchStatementDisplay().length > 0',
+                                buildResearchStatement())
+                        ]))
                 ])
             ])
         });
@@ -382,10 +378,10 @@ define([
     function component() {
         return {
             template: template(),
-            viewModel: viewModel
+            viewModel: ViewModel
         };
     }
 
-    // note that this component is provided as a globally known component: 'profile-view'
-    return component;
+    // note that this component is also provided as a globally known component: 'profile-view'
+    return reg.registerComponent(component);
 });

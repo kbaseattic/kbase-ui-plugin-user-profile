@@ -17,7 +17,7 @@
         "url": "git://github.com/kbase/kbase-ui-plugin-user-profile"
     },
     "dependencies": {
-        "bluebird": "^3.4.7",
+        "bluebird": "^3.5.0",
         "bootstrap": "^3.3.0"
     },
     "devDependencies": {},
