@@ -12,7 +12,7 @@ define([
     'use strict';
 
     class NarrativesModel {
-        constructor({runtime}) {
+        constructor({ runtime }) {
             this.runtime = runtime;
         }
 
@@ -47,8 +47,8 @@ define([
             const narrativeService = this.runtime.service('rpc').makeClient({
                 module: 'NarrativeService'
             });
-            // todo: coalesce these into two calls to get narratives, combine them
-            // ensure uniquess, then enhance them.
+                // todo: coalesce these into two calls to get narratives, combine them
+                // ensure uniquess, then enhance them.
             return Promise.all([
                 narrativeService.callFunc('list_narratives', [{
                     type: 'shared'
@@ -129,8 +129,8 @@ define([
                             narrative.permissions = lang.objectToArray(permissions[i], 'username', 'permission')
                                 .filter((x) => {
                                     return !(x.username === currentUsername ||
-                                        x.username === '*' ||
-                                        x.username === narrative.workspace.owner);
+                                            x.username === '*' ||
+                                            x.username === narrative.workspace.owner);
                                 })
                                 .sort((a, b) => {
                                     if (a.username < b.username) {
@@ -174,6 +174,10 @@ define([
         }
 
         addNarrativeCreation(narratives) {
+            // console.log('narratives?', narratives);
+            if (narratives.length === 0) {
+                return [];
+            }
             var firstVersions = narratives.map((narrative) => {
                 return {
                     ref: [narrative.workspace.id, narrative.object.id, 1].join('/')

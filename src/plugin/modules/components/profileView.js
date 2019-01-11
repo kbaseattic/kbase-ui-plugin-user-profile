@@ -48,8 +48,8 @@ define([
     'use strict';
 
     /*
-        incoming params is a raw user profile. We turn that into a view model
-    */
+            incoming params is a raw user profile. We turn that into a view model
+        */
     class ViewModel {
         constructor(params) {
             this.userProfile = params.profile;
@@ -322,7 +322,7 @@ define([
                                     marginBottom: '1em'
                                 }
                             }, [
-                                gen.if('jobTitle',
+                                gen.if('$data.jobTitle',
                                     gen.if('jobTitle !== "Other"',
                                         span({
                                             dataBind: {

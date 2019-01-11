@@ -10,7 +10,7 @@ define([
     'use strict';
 
     class CollaboratorsModel {
-        constructor({runtime}) {
+        constructor({ runtime }) {
             this.runtime = runtime;
         }
 
@@ -33,17 +33,17 @@ define([
                 return workspaceClient.callFunc('get_permissions_mass', [{
                     workspaces: permParam
                 }])
-                    .spread(({perms}) => {
+                    .spread(({ perms }) => {
                         perms.forEach((perm, index) => {
                             const narrative = narratives[index];
                             narrative.permissions = Object.entries(perm)
-                                // filter out current user, the public user *, and the
-                                // current narrative owner ()
-                                // TODO: hmm, I think we may not need to do this...
-                                .filter(([username, ]) => {
+                            // filter out current user, the public user *, and the
+                            // current narrative owner ()
+                            // TODO: hmm, I think we may not need to do this...
+                                .filter(([username,]) => {
                                     return !(username === currentUsername ||
-                                        username === '*' ||
-                                        username === narrative.workspace.owner);
+                                            username === '*' ||
+                                            username === narrative.workspace.owner);
                                 });
                         });
                         return narratives;
@@ -52,14 +52,14 @@ define([
         }
 
         /*
-        Given the current authorized user, and a subject user that this user is inspecting,
-        provide a list of all users who share narratives in common with these two users.
-        We do this by fetching all narratives the current user can access, filtering to ensure
-        the subject user also has access (owns or is shared with), and then extracting all of
-        the users who either own the narratives or with whom they are shared. We also count
-        the number of narratives each user owns or is shared with to provide a collaboration
-        measure of strength.
-        */
+                        Given the current authorized user, and a subject user that this user is inspecting,
+                        provide a list of all users who share narratives in common with these two users.
+                        We do this by fetching all narratives the current user can access, filtering to ensure
+                        the subject user also has access (owns or is shared with), and then extracting all of
+                        the users who either own the narratives or with whom they are shared. We also count
+                        the number of narratives each user owns or is shared with to provide a collaboration
+                        measure of strength.
+                        */
         getCollaborators(commonUsers) {
             const narrativeClient = this.runtime.service('rpc').makeClient({
                 module: 'NarrativeService'
@@ -95,9 +95,9 @@ define([
                         if (commonUsers.some((user) => {
                             return !(
                                 narrative.workspace.owner === user ||
-                                narrative.permissions.some(([username,]) => {
-                                    return username === user;
-                                })
+                                    narrative.permissions.some(([username,]) => {
+                                        return username === user;
+                                    })
                             );
                         })) {
                             return;
@@ -107,7 +107,7 @@ define([
                         var filtered = narrative.permissions.filter(([username,]) => {
                             return !(
                                 commonUsers.includes(username) ||
-                                username === '*'
+                                    username === '*'
                             );
                         });
 
