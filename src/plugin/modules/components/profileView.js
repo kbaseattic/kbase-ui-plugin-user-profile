@@ -48,8 +48,8 @@ define([
     'use strict';
 
     /*
-            incoming params is a raw user profile. We turn that into a view model
-        */
+        incoming params is a raw user profile. We turn that into a view model
+    */
     class ViewModel {
         constructor(params) {
             this.userProfile = params.profile;
@@ -70,8 +70,90 @@ define([
                 }
                 return text.replace(/\n/g, '<br>');
             });
+            this.authToken = this.getAuthToken();
+            this.Orgs = ko.observableArray();
+            this.fetchOrgs(this.authToken).then(orgs => {
+                // @ param {orgs} array of org names
+                let arr = [];
+                orgs.forEach(org=>{
+                    arr.push(org.name);
+                })
+                this.Orgs(arr)
+                return null;
+            })
         }
 
+        /**
+         * get Authrization token from session cookies. 
+         */
+        getAuthToken(){
+            let cookies = window.document.cookie.split(';');
+            let token = "";
+            cookies.forEach(cookie => {
+                if(cookie.split('=')[0].trim() === "kbase_session") {
+                    token = cookie.split('=')[1].trim()
+                }
+            });
+            return token;
+        }
+
+        /**
+         * fetch organization details. 
+         * @param {string} org  group ID
+         */
+        fetchGroupInfo(org) {
+            let groupUrl = "https://ci.kbase.us/services/groups/group/"+org.id;
+            return fetch(groupUrl, {
+                method: "GET",
+                mode: "cors",
+                json: true,
+                headers:{
+                    "Authorization": this.authToken,
+                    "Content-Type": "application/json",
+                },
+            })
+            .then(response => response.json())
+            .then(response => {
+               return response;
+            })
+            .catch(error => console.error('Error while fetching group info:', error));
+        }
+
+        /**
+         * fetch organizations that user is associated.
+         * @param {string} token  authorization token
+         */
+        
+        fetchOrgs(token) {
+            let groupUrl = "https://ci.kbase.us/services/groups/member/";
+            return fetch(groupUrl, {
+                method: "GET",
+                mode: "cors",
+                json: true,
+                headers:{
+                    "Authorization": token,
+                    "Content-Type": "application/json",
+                },
+            })
+            .then(response => response.json())
+            .then(response => {
+                return Promise.all(response.map(group => this.fetchGroupInfo(group)));
+            })
+            .then(groupInfos => {
+                // groupInfos is an array of all the groups the current user is in
+                // Find all the groups that the profile user is a member, admin, or owner of.
+                const userGroups = groupInfos.filter(group => {
+                    const allPeople = [group.owner].concat(group.admins).concat(group.members);
+                    const memberOf = allPeople.filter(m => {
+                        return m.name === this.userProfile.user.username
+                    });
+                    return memberOf.length;
+                });
+                return userGroups;
+            })
+            .catch(error => console.error('Error while fetching groups associated with the user:', error));
+        }
+        
         buildAvatarUrl() {
             switch (this.userProfile.profile.userdata.avatarOption || 'gravatar') {
             case 'gravatar':
@@ -97,6 +179,7 @@ define([
         span = t('span'),
         p = t('p'),
         img = t('img'),
+        h2 = t('h2'),
         h3 = t('h3'),
         ul = t('ul'),
         li = t('li');
@@ -302,18 +385,13 @@ define([
                     }
                 })),
                 div({
-                    class: 'col-md-9'
+                    class: 'col-md-4'
                 }, [
-                    div({
-                        style: {
-                            fontWeight: 'bold',
-                            fontSize: '120%'
-                        },
-                        dataBind: {
+                    h2(
+                        {dataBind: {
                             text: 'userProfile.user.realname'
                         }
                     }),
-
                     gen.if('$data.userProfile.profile.userdata',
                         gen.with('$data.userProfile.profile.userdata', [
                             div({
@@ -364,6 +442,20 @@ define([
                             gen.if('$component.researchStatementDisplay().length > 0',
                                 buildResearchStatement())
                         ]))
+                ]),
+                div({
+                    class: 'col-md-5'
+                }, [
+                    h3("Oraganizations"),
+                    ul({
+                        dataBind: {
+                            foreach:'Orgs'
+                        }
+                    }, [li({
+                        dataBind: {
+                            text: "$data" 
+                        }
+                    })])
                 ])
             ])
         });
