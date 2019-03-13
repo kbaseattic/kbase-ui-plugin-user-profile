@@ -9,6 +9,6 @@
     "contributors": [],
     "dependencies": {},
     "devDependencies": {
-        "eslint": "4.18.2"
+        "eslint": "5.15.1"
     }
 }

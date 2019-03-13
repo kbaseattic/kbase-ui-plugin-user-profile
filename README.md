@@ -1,3 +1,3 @@
-# PLUGIN TITLE
+# User Profile Plugin
 
-This is a sample readme for a plugin. Please use this space to splain it.
+A plugin to provide a user profile viewer, including associated components.
