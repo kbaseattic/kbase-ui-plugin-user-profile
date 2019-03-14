@@ -73,6 +73,8 @@ define([
 
             this.fetchOrgs().then((orgs) => {
                 // @ param {orgs} array of org names
+                // TODO: add permlinks to here
+                console.log(window.location.origin)
                 const arr = [];
                 orgs.forEach((org) => {
                     arr.push(org.name);
