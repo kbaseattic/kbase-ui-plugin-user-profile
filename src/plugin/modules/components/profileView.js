@@ -75,7 +75,8 @@ define([
                 // @ param {orgs} array of org names
                 const arr = [];
                 orgs.forEach((org) => {
-                    arr.push(org.name);
+                    let orgNameUrl = {name: org.name, url: window.location.origin + "/#org/" + org.id }
+                    arr.push(orgNameUrl);
                 });
                 this.orgs(arr);
                 return null;
@@ -97,11 +98,11 @@ define([
                     'Content-Type': 'application/json'
                 }
             })
-                .then((response) => response.json())
-                .then((response) => {
-                    return response;
-                })
-                .catch((error) => console.error('Error while fetching group info:', error));
+            .then((response) => response.json())
+            .then((response) => {
+                return response;
+            })
+            .catch((error) => console.error('Error while fetching group info:', error));
         }
 
         /**
@@ -120,23 +121,23 @@ define([
                     'Content-Type': 'application/json'
                 }
             })
-                .then((response) => response.json())
-                .then((response) => {
-                    return Promise.all(response.map((group) => this.fetchGroupInfo(group)));
-                })
-                .then((groupInfos) => {
-                    // groupInfos is an array of all the groups the current user is in
-                    // Find all the groups that the profile user is a member, admin, or owner of.
-                    const userGroups = groupInfos.filter((group) => {
-                        const allPeople = [group.owner].concat(group.admins).concat(group.members);
-                        const memberOf = allPeople.filter((m) => {
-                            return m.name === this.userProfile.user.username;
-                        });
-                        return memberOf.length;
+            .then((response) => response.json())
+            .then((response) => {
+                return Promise.all(response.map((group) => this.fetchGroupInfo(group)));
+            })
+            .then((groupInfos) => {
+                // groupInfos is an array of all the groups the current user is in
+                // Find all the groups that the profile user is a member, admin, or owner of.
+                const userGroups = groupInfos.filter((group) => {
+                    const allPeople = [group.owner].concat(group.admins).concat(group.members);
+                    const memberOf = allPeople.filter((m) => {
+                        return m.name === this.userProfile.user.username;
                     });
-                    return userGroups;
-                })
-                .catch((error) => console.error('Error while fetching groups associated with the user:', error));
+                    return memberOf.length;
+                });
+                return userGroups;
+            })
+            .catch((error) => console.error('Error while fetching groups associated with the user:', error));
         }
 
         buildAvatarUrl() {
@@ -169,7 +170,8 @@ define([
         h2 = t('h2'),
         h3 = t('h3'),
         ul = t('ul'),
-        li = t('li');
+        li = t('li'),
+        a = t('a');
 
     function buildResearchInterests() {
         return [
@@ -413,7 +415,7 @@ define([
                     ),
                     div(
                         {
-                            class: 'col-md-4'
+                            class: 'col-md-6'
                         },
                         [
                             h2({
@@ -490,7 +492,7 @@ define([
                     ),
                     div(
                         {
-                            class: 'col-md-5'
+                            class: 'col-md-3'
                         },
                         [
                             h3('Oraganizations'),
@@ -501,11 +503,17 @@ define([
                                     }
                                 },
                                 [
-                                    li({
+                                    a({
                                         dataBind: {
-                                            text: '$data'
+                                            attr: { href: "$data.url" }
                                         }
-                                    })
+                                    },
+                                        li({
+                                            dataBind: {
+                                               text: '$data.name'
+                                            }
+                                        })
+                                    )
                                 ]
                             )
                         ]
