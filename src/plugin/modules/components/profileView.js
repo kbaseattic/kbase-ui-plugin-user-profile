@@ -494,8 +494,9 @@ define([
                         {
                             class: 'col-md-3'
                         },
+                        gen.if(this.orgs)(
                         [
-                            h3('Oraganizations'),
+                            h3('Organizations'),
                             ul(
                                 {
                                     dataBind: {
@@ -516,7 +517,7 @@ define([
                                     )
                                 ]
                             )
-                        ]
+                        ])
                     )
                 ]
             )
