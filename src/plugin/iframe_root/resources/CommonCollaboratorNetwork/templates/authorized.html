@@ -10,8 +10,8 @@
     <tbody>
         {% for user in state.collaborators %}
         <tr>
-            <td><a href="#people/{{user.username}}">{{user.realname}}</a></td>
-            <td><a href="#people/{{user.username}}">{{user.username}}</a></td>
+            <td><a target="_parent" href="/#people/{{user.username}}">{{user.realname}}</a></td>
+            <td><a target="_parent" href="/#people/{{user.username}}">{{user.username}}</a></td>
             <td>{{user.count}}</td>
         </tr>
         {% endfor %}

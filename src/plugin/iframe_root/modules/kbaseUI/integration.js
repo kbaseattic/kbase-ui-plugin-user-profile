@@ -2,7 +2,7 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
     'use strict';
 
     class Integration {
-        constructor({ rootWindow }) {
+        constructor({ rootWindow, pluginConfig }) {
             this.rootWindow = rootWindow;
             this.container = rootWindow.document.body;
             // channelId, frameId, hostId, parentHost
@@ -11,6 +11,7 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
 
             // The original params from the plugin (taken from the url)
             this.pluginParams = this.hostParams.params;
+            this.pluginConfig = pluginConfig;
 
             this.authorized = null;
 
@@ -158,7 +159,8 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                     this.runtime = new Runtime({
                         config,
                         token,
-                        username
+                        username,
+                        pluginConfig: this.pluginConfig
                     });
 
                     this.runtime
