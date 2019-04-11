@@ -1,4 +1,4 @@
-/node_modules/
-/nbproject/
-/bower_components/
+node_modules/
+bower_components/
 .DS_Store
+.vscode

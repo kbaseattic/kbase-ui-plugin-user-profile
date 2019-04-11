@@ -1,95 +1,87 @@
-define([
-    'bluebird',
-    'kb_lib/html',
-    'kb_widget/widgetSet'
-], function (
-    Promise,
-    html,
-    WidgetSet
-) {
+define(['module', './iframer', 'css!./panel.css'], function(module, Iframer) {
     'use strict';
 
-    function widget(config) {
-        var mount, container,
-            runtime = config.runtime,
-            widgetSet = WidgetSet.make({ runtime: runtime });
+    // The module url includes the initial / and, so we start after that,
+    // and we also remove this file and the modules directory.
+    const pluginPath = module.uri
+        .split('/')
+        .slice(1, -2)
+        .join('/');
 
-        function renderPanel() {
-            return new Promise(function (resolve) {
-                // Render panel
-                var div = html.tag('div');
-                var panel = div({
-                    class: 'kbase-view kbase-user-page-view container-fluid',
-                    dataKbaseView: 'social',
-                    dataKBTesthookPlugin: 'user-profile'
-                }, [
-                    div({ class: 'row' }, [
-                        div({ class: 'col-sm-9' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_profileViewer') })
-                        ]),
-                        div({ class: 'col-sm-3' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_userSearch') })
-                        ])
-                    ]),
-                    div({ class: 'row' }, [
-                        div({ class: 'col-sm-12' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_narratives') })
-                        ])
-                    ]),
-                    div({ class: 'row' }, [
-                        div({ class: 'col-sm-12' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_collaborators') })
-                        ])
-                    ])
-                ]);
-                resolve({
-                    title: runtime.service('session').getUsername(),
-                    content: panel
-                });
+    class Panel {
+        constructor(config) {
+            this.runtime = config.runtime;
+            this.iframer = null;
+            this.hostNode = null;
+            this.container = null;
+            this.firstTime = true;
+        }
+
+        attach(node) {
+            this.hostNode = node;
+            this.container = node.appendChild(document.createElement('div'));
+            this.container.classList.add('plugin_dashboard_panel');
+            this.container.style.flex = '1 1 0px';
+            this.container.style.display = 'flex';
+            this.container.style['flex-direction'] = 'column';
+        }
+
+        start(params) {
+            params = params || {};
+
+            if (params.viewParams) {
+                params.viewParams = JSON.parse(params.viewParams);
+            }
+
+            if (params.orgId) {
+                params.view = 'org';
+                params.viewParams = {
+                    id: params.orgId
+                };
+            }
+
+            this.iframer = new Iframer({
+                runtime: this.runtime,
+                node: this.container,
+                pluginPath: pluginPath,
+                params: {
+                    // config: this.runtime.rawConfig(),
+                    // token: this.runtime.service('session').getAuthToken(),
+                    // username: this.runtime.service('session').getUsername(),
+                    originalPath: window.location.pathname,
+                    routeParams: params || {}
+                }
             });
+
+            this.runtime.send('ui', 'setTitle', 'Example');
+
+            return this.iframer.start();
         }
 
-        // API
-        function attach(node) {
-            return Promise.try(function () {
-                mount = node;
-                container = document.createElement('div');
-                mount.appendChild(container);
-                return renderPanel()
-                    .then(function (rendered) {
-                        container.innerHTML = rendered.content;
-                        runtime.send('ui', 'setTitle', rendered.title);
-                        // create widgets.
-                        return widgetSet.init();
-                    })
-                    .then(function () {
-                        return widgetSet.attach(container);
-                    });
-            });
+        run(params) {
+            // console.log('re-running the panel!', params);
+            // The route to get here provides an optional path and
+            // query. We simply pass those into the already-running
+            // iframe-based app.
+
+            // in the params, the 'path' property represents the rest of the
+            // nav path (hash) after #auth.
+            // We remove that and call it the path for the sake of the
+            // navigate event.
+            const path = params.path;
+            delete params.path;
+
+            this.iframer.channel.send('navigate', { path, params });
         }
 
-        function start(params) {
-            return widgetSet.start(params);
+        stop() {
+            if (this.hostNode && this.container) {
+                this.hostNode.removeChild(this.container);
+            }
+            if (this.iframer) {
+                return this.iframer.stop();
+            }
         }
-
-        function stop() {
-            return widgetSet.stop();
-        }
-
-        function detach() {
-            return widgetSet.detach();
-        }
-        return {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
-        };
     }
-
-    return {
-        make: function (config) {
-            return widget(config);
-        }
-    };
+    return Panel;
 });
