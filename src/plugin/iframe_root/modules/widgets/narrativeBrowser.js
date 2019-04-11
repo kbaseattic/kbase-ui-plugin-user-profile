@@ -68,9 +68,12 @@ define([
         }
 
         function getMyNarratives() {
-            return narrativeServiceClient.callFunc('list_narratives', [{
-                type: 'mine'
-            }])
+            return narrativeServiceClient
+                .callFunc('list_narratives', [
+                    {
+                        type: 'mine'
+                    }
+                ])
                 .then(function (result) {
                     return enhanceNarratives(result[0].narratives);
                 })
@@ -81,51 +84,51 @@ define([
 
         function getTheirNarratives(username) {
             return Promise.all([
-                narrativeServiceClient.callFunc('list_narratives', [{
-                    type: 'shared'
-                }])
+                narrativeServiceClient
+                    .callFunc('list_narratives', [
+                        {
+                            type: 'shared'
+                        }
+                    ])
                     .then(function (result) {
                         return enhanceNarratives(result[0].narratives);
                     })
                     .then(function (narratives) {
                         return narratives.filter(function (narrative) {
-                            return (
-                                narrative.owner === username
-                            );
+                            return narrative.owner === username;
                         });
                     }),
-                narrativeServiceClient.callFunc('list_narratives', [{
-                    type: 'public'
-                }])
+                narrativeServiceClient
+                    .callFunc('list_narratives', [
+                        {
+                            type: 'public'
+                        }
+                    ])
                     .then(function (result) {
                         return enhanceNarratives(result[0].narratives);
                     })
                     .then(function (narratives) {
-                        return narratives
-                            .filter(function (narrative) {
-                                return (
-                                    narrative.owner === username
-                                );
-                            });
+                        return narratives.filter(function (narrative) {
+                            return narrative.owner === username;
+                        });
                     })
-            ])
-                .spread(function (shared, publicNarratives) {
-                    // var total = shared[0].narratives.concat(publicNarratives[0].narratives);
-                    var total = shared;
-                    var totalMap = {};
-                    total.forEach(function (narrative) {
-                        totalMap[narrative.object.ref] = narrative;
-                    });
-                    publicNarratives.forEach(function (narrative) {
-                        if (totalMap[narrative.object.ref]) {
-                            totalMap[narrative.object.ref].public = true;
-                        } else {
-                            narrative.public = true;
-                            total.push(narrative);
-                        }
-                    });
-                    return total;
+            ]).spread(function (shared, publicNarratives) {
+                // var total = shared[0].narratives.concat(publicNarratives[0].narratives);
+                var total = shared;
+                var totalMap = {};
+                total.forEach(function (narrative) {
+                    totalMap[narrative.object.ref] = narrative;
                 });
+                publicNarratives.forEach(function (narrative) {
+                    if (totalMap[narrative.object.ref]) {
+                        totalMap[narrative.object.ref].public = true;
+                    } else {
+                        narrative.public = true;
+                        total.push(narrative);
+                    }
+                });
+                return total;
+            });
         }
 
         // function getTheirNarrativesIncludingCommonShared(username, currentUsername) {
@@ -196,18 +199,23 @@ define([
                         id: narrative.workspace.id
                     };
                 });
-                return workspaceClient.callFunc('get_permissions_mass', [{
-                    workspaces: permParams
-                }])
+                return workspaceClient
+                    .callFunc('get_permissions_mass', [
+                        {
+                            workspaces: permParams
+                        }
+                    ])
                     .then(function (result) {
                         var permissions = result[0].perms;
                         for (var i = 0; i < permissions.length; i++) {
                             var narrative = narratives[i];
                             narrative.permissions = Utils.object_to_array(permissions[i], 'username', 'permission')
                                 .filter(function (x) {
-                                    return !(x.username === currentUsername ||
+                                    return !(
+                                        x.username === currentUsername ||
                                         x.username === '*' ||
-                                        x.username === narrative.workspace.owner);
+                                        x.username === narrative.workspace.owner
+                                    );
                                 })
                                 .sort(function (a, b) {
                                     if (a.username < b.username) {
@@ -223,15 +231,15 @@ define([
             });
         }
 
-
         function enhanceNarratives(narratives) {
-            return narratives.map(function (item) {
-                item.object = serviceUtils.objectInfoToObject(item.nar);
-                item.workspace = serviceUtils.workspaceInfoToObject(item.ws);
-                return item;
-            })
+            return narratives
+                .map(function (item) {
+                    item.object = serviceUtils.objectInfoToObject(item.nar);
+                    item.workspace = serviceUtils.workspaceInfoToObject(item.ws);
+                    return item;
+                })
                 .filter(function (narrative) {
-                    return (narrative.workspace.metadata.is_temporary !== 'true');
+                    return narrative.workspace.metadata.is_temporary !== 'true';
                 })
                 .map(function (item, index) {
                     item.title = item.workspace.metadata.narrative_nice_name;
@@ -262,11 +270,14 @@ define([
             // var workspace = new Workspace(runtime.config('services.workspace.url', {
             //     token: runtime.service('session').getAuthToken()
             // }));
-            return workspaceClient.callFunc('get_object_info3', [{
-                objects: firstVersions,
-                includeMetadata: 1,
-                ignoreErrors: 1
-            }])
+            return workspaceClient
+                .callFunc('get_object_info3', [
+                    {
+                        objects: firstVersions,
+                        includeMetadata: 1,
+                        ignoreErrors: 1
+                    }
+                ])
                 .spread(function (firsts) {
                     firsts.infos.forEach(function (first, index) {
                         var firstNarrative = serviceUtils.objectInfoToObject(first);
@@ -291,46 +302,49 @@ define([
             var query;
             // TODO: move this logic into the component
             if (!params.username || runtime.service('session').getUsername() === params.username) {
-                runtime.send('ui', 'setTitle', 'Your Profile');
                 query = getMyNarratives(currentUsername);
                 title = 'Your Narratives';
             } else {
-                runtime.send('ui', 'setTitle', 'Profile for ' + params.username);
                 query = getTheirNarratives(params.username, currentUsername);
-                title = 'Narratives owned by ' + build.safeText(params.username) + ' to which you have access (shared or public)';
+                title =
+                    'Narratives owned by ' +
+                    build.safeText(params.username) +
+                    ' to which you have access (shared or public)';
             }
 
-            container.innerHTML = div({
-                class: 'well'
-            }, build.loading('Loading narratives...'));
-            return query.then(function (narratives) {
-                // now get the creation date ...
-                if (narratives.length > 0) {
-                    return addNarrativeCreation(narratives);
-                } else {
-                    return narratives;
-                }
-
-            })
+            container.innerHTML = div(
+                {
+                    class: 'well'
+                },
+                build.loading('Loading narratives...')
+            );
+            return query
+                .then(function (narratives) {
+                    // now get the creation date ...
+                    if (narratives.length > 0) {
+                        return addNarrativeCreation(narratives);
+                    } else {
+                        return narratives;
+                    }
+                })
                 .then(function (narratives) {
                     render();
 
-                    ko.applyBindings({
-                        narratives: narratives,
-                        title: title,
-                        username: params.username || runtime.service('session').getUsername(),
-                        currentUsername: runtime.service('session').getUsername()
-                    }, container);
+                    ko.applyBindings(
+                        {
+                            narratives: narratives,
+                            title: title,
+                            username: params.username || runtime.service('session').getUsername(),
+                            currentUsername: runtime.service('session').getUsername()
+                        },
+                        container
+                    );
                 });
         }
 
-        function stop() {
+        function stop() {}
 
-        }
-
-        function detach() {
-
-        }
+        function detach() {}
 
         return {
             attach: attach,

@@ -2,14 +2,13 @@
 ---
 package:
     author: KBase Developer
-    name: example
-    description: The example panel and associated widgets
+    name: user-profile
+    description: The user-profile panel and associated widgets
 source:
     ## sources are relative to build/plugins/PACKAGE/source/javascript
     ## NB: need to quote file names, otherwise
     modules:
     styles:
-        # - file: styles.css
 install:
     widgets:
         - module: ./panel

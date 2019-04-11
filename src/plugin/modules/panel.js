@@ -1,4 +1,4 @@
-define(['module', './iframer', 'css!./panel.css'], function(module, Iframer) {
+define(['module', './iframer', 'css!./panel.css'], function (module, Iframer) {
     'use strict';
 
     // The module url includes the initial / and, so we start after that,
@@ -20,7 +20,7 @@ define(['module', './iframer', 'css!./panel.css'], function(module, Iframer) {
         attach(node) {
             this.hostNode = node;
             this.container = node.appendChild(document.createElement('div'));
-            this.container.classList.add('plugin_dashboard_panel');
+            this.container.classList.add('plugin_userProfile_panel');
             this.container.style.flex = '1 1 0px';
             this.container.style.display = 'flex';
             this.container.style['flex-direction'] = 'column';
@@ -53,7 +53,13 @@ define(['module', './iframer', 'css!./panel.css'], function(module, Iframer) {
                 }
             });
 
-            this.runtime.send('ui', 'setTitle', 'Example');
+            this.runtime.send('ui', 'setTitle', '');
+
+            if (!params.username || this.runtime.service('session').getUsername() === params.username) {
+                this.runtime.send('ui', 'setTitle', 'Your Profile');
+            } else {
+                this.runtime.send('ui', 'setTitle', 'Profile for ' + params.username);
+            }
 
             return this.iframer.start();
         }

@@ -1,16 +1,9 @@
-define([
-    'bluebird',
-    'kb_lib/html',
-    'kbaseUI/widget/widgetSet'
-], function (
-    Promise,
-    html,
-    WidgetSet
-) {
+define(['bluebird', 'kb_lib/html', 'kbaseUI/widget/widgetSet'], function (Promise, html, WidgetSet) {
     'use strict';
 
     function widget(config) {
-        var mount, container,
+        var mount,
+            container,
             runtime = config.runtime,
             widgetSet = runtime.service('widget').newWidgetSet();
 
@@ -18,30 +11,29 @@ define([
             return new Promise(function (resolve) {
                 // Render panel
                 var div = html.tag('div');
-                var panel = div({
-                    class: 'kbase-view kbase-user-page-view container-fluid',
-                    dataKbaseView: 'social',
-                    dataKBTesthookPlugin: 'user-profile'
-                }, [
-                    div({ class: 'row' }, [
-                        div({ class: 'col-sm-9' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_profileViewer') })
+                var panel = div(
+                    {
+                        class: 'kbase-view kbase-user-page-view container-fluid',
+                        dataKbaseView: 'social',
+                        dataKBTesthookPlugin: 'user-profile'
+                    },
+                    [
+                        div({ class: 'row' }, [
+                            div({ class: 'col-sm-9' }, [
+                                div({ id: widgetSet.addWidget('kb_userProfile_profileViewer') })
+                            ]),
+                            div({ class: 'col-sm-3' }, [div({ id: widgetSet.addWidget('kb_userProfile_userSearch') })])
                         ]),
-                        div({ class: 'col-sm-3' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_userSearch') })
+                        div({ class: 'row' }, [
+                            div({ class: 'col-sm-12' }, [div({ id: widgetSet.addWidget('kb_userProfile_narratives') })])
+                        ]),
+                        div({ class: 'row' }, [
+                            div({ class: 'col-sm-12' }, [
+                                div({ id: widgetSet.addWidget('kb_userProfile_collaborators') })
+                            ])
                         ])
-                    ]),
-                    div({ class: 'row' }, [
-                        div({ class: 'col-sm-12' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_narratives') })
-                        ])
-                    ]),
-                    div({ class: 'row' }, [
-                        div({ class: 'col-sm-12' }, [
-                            div({ id: widgetSet.addWidget('kb_userProfile_collaborators') })
-                        ])
-                    ])
-                ]);
+                    ]
+                );
                 resolve({
                     title: runtime.service('session').getUsername(),
                     content: panel
@@ -58,7 +50,7 @@ define([
                 return renderPanel()
                     .then(function (rendered) {
                         container.innerHTML = rendered.content;
-                        runtime.send('ui', 'setTitle', rendered.title);
+                        // runtime.send('ui', 'setTitle', rendered.title);
                         // create widgets.
                         return widgetSet.init();
                     })
