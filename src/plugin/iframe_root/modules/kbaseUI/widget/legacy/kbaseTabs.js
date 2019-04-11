@@ -6,9 +6,9 @@
  white: true
  */
 /*
- 
+
  Easy widget to serve as a tabbed container.
- 
+
  var $tabs = $('#tabs').kbaseTabs(
  {
  tabPosition : 'bottom', //or left or right or top. Defaults to 'top'
@@ -31,19 +31,15 @@
  ],
  }
  );
- 
+
  useful methods would be:
- 
+
  $('#tabs').kbaseTabs('showTab', 'T1');
  $('#tabs').kbaseTabs('addTab', tabObject);  //the tabObject defined up above
- 
+
  */
 
-define([
-    'jquery',
-    './widget',
-    'bootstrap'
-], function ($) {
+define(['jquery', './widget', 'bootstrap'], function ($) {
     'use strict';
     $.KBWidget({
         name: 'kbaseTabs',
@@ -55,7 +51,6 @@ define([
             borderColor: 'lightgray'
         },
         init: function (options) {
-
             this._super(options);
 
             this.data('tabs', {});
@@ -64,10 +59,8 @@ define([
             this.appendUI($(this.$elem));
 
             return this;
-
         },
         appendUI: function ($elem, tabs) {
-
             if (tabs === undefined) {
                 tabs = this.options.tabs;
             }
@@ -90,14 +83,15 @@ define([
             $elem.append($block);
 
             if (tabs) {
-                $.each(tabs, $.proxy(function (idx, tab) {
-                    this.addTab(tab);
-                }, this));
+                $.each(
+                    tabs,
+                    $.proxy(function (idx, tab) {
+                        this.addTab(tab);
+                    }, this)
+                );
             }
-
         },
         addTab: function (tab) {
-
             if (tab.canDelete === undefined) {
                 tab.canDelete = this.options.canDelete;
             }
@@ -116,12 +110,12 @@ define([
 
             var $nav = $('<li></li>')
                 .css('white-space', 'nowrap')
-                .append($('<a></a>')
-                    .attr('href', '#')
-                    .text(tab.tab)
-                    .attr('data-tab', tab.tab)
-                    .bind('click',
-                        function (e) {
+                .append(
+                    $('<a></a>')
+                        .attr('href', '#')
+                        .text(tab.tab)
+                        .attr('data-tab', tab.tab)
+                        .bind('click', function (e) {
                             e.preventDefault();
                             e.stopPropagation();
 
@@ -138,40 +132,40 @@ define([
                             $.fn.tab.Constructor.prototype.activate.call(
                                 $(this),
                                 $(this).parent('li'),
-                                $that.data('tabs-nav'));
+                                $that.data('tabs-nav')
+                            );
 
-                            $.fn.tab.Constructor.prototype.activate.call(
-                                $(this),
-                                $tab,
-                                $tab.parent(),
-                                function () {
-                                    $(this).trigger({
-                                        type: 'shown',
-                                        relatedTarget: previous
-                                    });
+                            $.fn.tab.Constructor.prototype.activate.call($(this), $tab, $tab.parent(), function () {
+                                $(this).trigger({
+                                    type: 'shown',
+                                    relatedTarget: previous
                                 });
-                        }
-                    )
-                    .append($('<button></button>')
-                        .addClass('btn btn-default btn-xs')
-                        .append($('<i></i>').addClass(this.closeIcon()))
-                        .css('padding', '0px')
-                        .css('width', '22px')
-                        .css('height', '22px')
-                        .css('margin-left', '10px')
-                        .attr('title', this.deleteTabToolTip(tab.tab))
-                        .tooltip()
-                        .bind('click', $.proxy(function (e) {
-                            e.preventDefault();
-                            e.stopPropagation();
+                            });
+                        })
+                        .append(
+                            $('<button></button>')
+                                .addClass('btn btn-default btn-xs')
+                                .append($('<i></i>').addClass(this.closeIcon()))
+                                .css('padding', '0px')
+                                .css('width', '22px')
+                                .css('height', '22px')
+                                .css('margin-left', '10px')
+                                .attr('title', this.deleteTabToolTip(tab.tab))
+                                .tooltip()
+                                .bind(
+                                    'click',
+                                    $.proxy(function (e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
 
-                            if (tab.deleteCallback !== undefined) {
-                                tab.deleteCallback(tab.tab);
-                            } else {
-                                this.deletePrompt(tab.tab);
-                            }
-                        }, this))
-                    )
+                                        if (tab.deleteCallback !== undefined) {
+                                            tab.deleteCallback(tab.tab);
+                                        } else {
+                                            this.deletePrompt(tab.tab);
+                                        }
+                                    }, this)
+                                )
+                        )
                 );
 
             if (!tab.canDelete) {
@@ -200,7 +194,8 @@ define([
         },
         showTab: function (tab) {
             if (this.shouldShowTab(tab)) {
-                this.data('nav')[tab].find('a').trigger('click');
+                const nav = this.data('nav');
+                nav[tab].find('a').trigger('click');
             }
         },
         removeTab: function (tabName) {
@@ -209,9 +204,13 @@ define([
 
             if ($nav.hasClass('active')) {
                 if ($nav.next('li').length) {
-                    $nav.next().find('a').trigger('click');
+                    $nav.next()
+                        .find('a')
+                        .trigger('click');
                 } else {
-                    $nav.prev('li').find('a').trigger('click');
+                    $nav.prev('li')
+                        .find('a')
+                        .trigger('click');
                 }
             }
 
@@ -221,7 +220,7 @@ define([
             this.data('tabs')[tabName] = undefined;
             this.data('nav')[tabName] = undefined;
         },
-        shouldShowTab: function (tab) {
+        shouldShowTab: function () {
             return 1;
         },
         deletePrompt: function (tabName) {
@@ -238,7 +237,7 @@ define([
                 }
             }, this);
         },
-        shouldDeleteTab: function (tabName) {
+        shouldDeleteTab: function () {
             return 1;
         },
         activeTab: function () {
@@ -246,5 +245,4 @@ define([
             return $(activeNav).attr('data-tab');
         }
     });
-
 });

@@ -12,7 +12,7 @@ define([
     function widget(config) {
         var mount, container,
             runtime = config.runtime,
-            widgetSet = new WidgetSet({ runtime: runtime, widgetManager: runtime.service('widgets').widgetManager });
+            widgetSet = runtime.service('widget').newWidgetSet();
 
         function renderPanel() {
             return new Promise(function (resolve) {

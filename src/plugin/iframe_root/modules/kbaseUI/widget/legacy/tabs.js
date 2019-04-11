@@ -1,39 +1,39 @@
 /*
  // tabs.js widget for creating and displaying tabs
- 
+
  // Instantiation
  // optional: content, active, removable
  // you can make all tabs or individual tabs removable
- 
+
  var tabs = $('#ele').tabs();
- 
+
  //or
- 
+
  var tabs = $('#ele').tabs({tabs: [
  {name: 'tab1', content: 'foo text or html', active: true},
  {name: 'tab2', content: 'text or html 2', removable: true}
  ]
  });
- 
+
  // Add a new tab
  // optional: content, active
- 
+
  tabs.addTab({name: 'tab3', content: 'new content'})
- 
+
  // Retrieve a tab button
  // (useful for adding events or other stuff)
- 
+
  var mytab = tabs.tab('tab1')
- 
+
  // Add content to existing tab
  // (useful for ajax/event stuff)
- 
+
  tabs.tab({name: 'tab3', content: 'blah blah blah'})
- 
+
  // manually show a tab
  // Tab panes are shown when clicked automatically.
  // This is a programmatic way of showing a tab.
- 
+
  tabs.showTab('tab_name');
  */
 /*global
@@ -43,10 +43,7 @@
  browser: true,
  white: true
  */
-define([
-    'jquery',
-    './widget'
-], function ($) {
+define(['jquery', './widget'], function ($) {
     'use strict';
     $.KBWidget({
         name: 'kbTabs',
@@ -79,30 +76,34 @@ define([
                 } else {
                     tab.append(tab_link);
                     tabs.append(tab);
-                    // eap 7/6/15 - disable the following line; must be a hook into 
+                    // eap 7/6/15 - disable the following line; must be a hook into
                     // the bootstrap tab plugin; but it does not work with BS 3.
                     // tab.toggle('slide', {direction: 'down', duration: 'fast'});
                 }
 
                 // add close button if needed
                 if (p.removable || options.removable) {
-                    var rm_btn = $('<button type="button" class="close" style="margin-left: 6px; vertical-align: bottom; ">&times;</button>');
+                    var rm_btn = $(
+                        '<button type="button" class="close" style="margin-left: 6px; vertical-align: bottom; ">&times;</button>'
+                    );
                     tab_link.append(rm_btn);
 
-                    rm_btn.click(function (e) {
+                    rm_btn.click(function () {
                         self.rmTab(p.name);
                     });
                 }
 
                 // add content pane
                 var c = $('<div class="tab-pane ' + (p.active ? 'active' : '') + '" data-id="' + p.name + '">');
-                c.append((p.content || ''));
+                c.append(p.content || '');
                 tab_contents.append(c);
 
                 tab.click(function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    var id = $(this).find('a').data('id');
+                    var id = $(this)
+                        .find('a')
+                        .data('id');
                     self.showTab(id);
                 });
 
@@ -117,9 +118,15 @@ define([
 
                 // get previous or next tab
                 if (tab.next().length > 0) {
-                    id = tab.next().children('a').data('id');
+                    id = tab
+                        .next()
+                        .children('a')
+                        .data('id');
                 } else {
-                    id = tab.prev().children('a').data('id');
+                    id = tab
+                        .prev()
+                        .children('a')
+                        .data('id');
                 }
 
                 // remove the tab
@@ -143,14 +150,14 @@ define([
             // adds content to existing tab pane; useful for ajax
             this.addContent = function (p) {
                 var tab = tab_contents.children('[data-id="' + p.name + '"]');
-                tab.append((p.content || ''));
+                tab.append(p.content || '');
                 return tab;
             };
 
             this.setContent = function (p) {
                 var tab = tab_contents.children('[data-id="' + p.name + '"]');
                 tab.empty();
-                tab.append((p.content || ''));
+                tab.append(p.content || '');
                 /* TODO: probably better to return this to support chaining... */
                 return tab;
             };
@@ -159,7 +166,9 @@ define([
             this.showTab = function (id) {
                 tabs.children('li').removeClass('active');
                 tab_contents.children('.tab-pane').removeClass('active');
-                tabs.find('a[data-id="' + id + '"]').parent().addClass('active');
+                tabs.find('a[data-id="' + id + '"]')
+                    .parent()
+                    .addClass('active');
                 tab_contents.children('[data-id="' + id + '"]').addClass('active');
             };
 
@@ -170,9 +179,11 @@ define([
             // if tabs are supplied, add them
             // don't animate intial tabs
             if (options.tabs) {
-                options.tabs.forEach(function (tab) {
-                    this.addTab($.extend(tab, { animate: false }));
-                }.bind(this));
+                options.tabs.forEach(
+                    function (tab) {
+                        this.addTab($.extend(tab, { animate: false }));
+                    }.bind(this)
+                );
             }
 
             return this;

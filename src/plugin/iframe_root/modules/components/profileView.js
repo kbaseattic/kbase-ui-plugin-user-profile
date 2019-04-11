@@ -34,9 +34,8 @@ define([
     'kb_knockout/lib/generators',
     'kb_lib/html',
     'kb_lib/htmlBuilders',
-    'kb_lib/htmlBootstrapBuilders',
-    'kb_plugin_user-profile'
-], function (ko, reg, gen, html, build, BS, Plugin) {
+    'kb_lib/htmlBootstrapBuilders'
+], function (ko, reg, gen, html, build, BS) {
     'use strict';
 
     /*
@@ -150,12 +149,12 @@ define([
                         'https://www.gravatar.com/avatar/' + gravatarHash + '?s=500&amp;r=pg&d=' + gravatarDefault
                     );
                 } else {
-                    return Plugin.plugin.fullPath + '/images/nouserpic.png';
+                    return runtime.pluginResourcePath + '/images/nouserpic.png';
                 }
             case 'silhouette':
             case 'mysteryman':
             default:
-                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+                return runtime.pluginResourcePath + '/images/nouserpic.png';
             }
         }
     }

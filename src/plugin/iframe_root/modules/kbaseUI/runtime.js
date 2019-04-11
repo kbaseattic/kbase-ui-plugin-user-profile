@@ -1,25 +1,22 @@
-define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager', './session'], (
-    Promise,
-    props,
-    Messenger,
-    WidgetManager,
-    Session
-) => {
+define([
+    'bluebird',
+    'kb_lib/props',
+    'kb_lib/messenger',
+    './services/session',
+    './services/widget',
+    './services/type',
+    './services/rpc'
+], (Promise, props, Messenger, SessionService, WidgetService, TypeService, RPCService) => {
     'use strict';
 
     class Runtime {
-        constructor({ token, username, config }) {
+        constructor({ token, username, config, pluginConfig }) {
             this.token = token;
             this.username = username;
-            this.widgetManager = new WidgetManager({
-                baseWidgetConfig: {
-                    runtime: this
-                }
-            });
 
             this.configDb = new props.Props({ data: config });
 
-            this.pluginPath = '/modules/plugins/auth2-client/iframe_root';
+            this.pluginPath = '/modules/plugins/dataview/iframe_root';
             this.pluginResourcePath = this.pluginPath + '/resources';
 
             this.messenger = new Messenger();
@@ -27,7 +24,10 @@ define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager', './s
             this.heartbeatTimer = null;
 
             this.services = {
-                session: new Session({ runtime: this })
+                session: new SessionService({ runtime: this }),
+                widget: new WidgetService({ runtime: this }),
+                type: new TypeService({ runtime: this, config: pluginConfig.install.types }),
+                rpc: new RPCService({ runtime: this })
             };
 
             this.featureSwitches = {};
@@ -45,10 +45,10 @@ define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager', './s
         }
 
         service(name) {
-            switch (name) {
-            case 'session':
-                return this.services.session;
+            if (!(name in this.services)) {
+                throw new Error('The UI service "' + name + '" is not defined');
             }
+            return this.services[name];
         }
 
         getService(name) {

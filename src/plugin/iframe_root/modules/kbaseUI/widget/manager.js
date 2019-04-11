@@ -109,7 +109,7 @@ define(['bluebird', './adapters/objectWidget', './adapters/kbWidget', 'kb_lib/me
                     runtime: widgetConfig.runtime,
                     widget: {
                         module: widgetDef.module,
-                        jquery_object: (widgetDef.config && widgetDef.config.jqueryName) || config.jqueryName,
+                        jquery_object: (widgetDef.config && widgetDef.config.jqueryName) || widgetConfig.jqueryName,
                         panel: widgetDef.panel,
                         title: widgetDef.title
                     }
@@ -138,6 +138,10 @@ define(['bluebird', './adapters/objectWidget', './adapters/kbWidget', 'kb_lib/me
             }
 
             let widgetPromise;
+
+            // const configCopy = new merge.DeepMerger({}).mergeIn(config).value();
+            // console.log('continuing...', configCopy, this.baseWidgetConfig);
+            // const widgetConfig = new merge.DeepMerger(configCopy).mergeIn(this.baseWidgetConfig).value();
 
             const widgetConfig = Object.assign({}, config, this.baseWidgetConfig);
 

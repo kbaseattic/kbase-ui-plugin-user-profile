@@ -5,15 +5,13 @@ define([
     'kb_common/utils',
     'kb_common/html',
     'kb_service/userProfile',
-    'kb_plugin_user-profile'
 ], function (
     nunjucks,
     $,
     Promise,
     Utils,
     html,
-    UserProfile,
-    Plugin) {
+    UserProfile) {
     'use strict';
     var SocialWidget = Object.create({}, {
         // The init function interfaces this object with the caller, and sets up any
@@ -108,7 +106,7 @@ define([
                 /* TODO: the base url should be fed in from the calling env -- now the plugin package */
 
                 var loaders = [
-                    new nunjucks.WebLoader(Plugin.plugin.fullPath + '/' + this.widgetName + '/templates', true),
+                    new nunjucks.WebLoader(runtime.pluginResourcePath + '/' + this.widgetName + '/templates', true),
                     //new nunjucks.WebLoader(Plugin.plugin.path + '/UserProfileBase/templates', true)
                 ];
                 this.templates.env = new nunjucks.Environment(loaders, {
@@ -145,8 +143,8 @@ define([
                     widgetTitle: this.widgetTitle,
                     widgetName: this.widgetName,
                     docsite: this.runtime.getConfig('resources.docSite.base.url'),
-                    root: Plugin.plugin.path,
-                    pluginPath: Plugin.plugin.fullPath,
+                    root: runtime.pluginPath,
+                    pluginPath: runtime.pluginResourcePath,
                     getConfig: function (prop) {
                         return this.runtime.getConfig(prop);
                     }.bind(this)
@@ -641,7 +639,7 @@ define([
         },
         loadCSS: {
             value: function () {
-                this.loadCSSResource([Plugin.plugin.fullPath, this.widgetName, 'style.css'].join('/'));
+                this.loadCSSResource([runtime.pluginResourcePath, this.widgetName, 'style.css'].join('/'));
             }
         },
         renderMessages: {

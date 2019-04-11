@@ -102,8 +102,9 @@ define([
                             paddingTop: '6px'
                         }
                     }, [
-                        a({
-                            href: ['#people', result.username].join('/'),
+                        a({ 
+                            target: '_parent',
+                            href: ['/#people', result.username].join('/'),
                             style: {
                                 display: 'block'
                             }
