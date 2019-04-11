@@ -1,0 +1,42 @@
+## YAML Template.
+---
+package:
+    author: Erik Pearson
+    name: user-profile
+    description: The user profile panel and associated widgets
+    date: August 5, 2015
+    version: 1.0.0
+source:
+install:
+    widgets:
+        -
+            module: panel
+            id: kb_userProfile_panel
+            type: factory
+        -
+            module: widgets/userProfileViewer
+            id: kb_userProfile_profileViewer
+            type: factory
+        -
+            module: widgets/userSearch
+            id: kb_userProfile_userSearch
+            css: true
+            type: factory
+        -
+            module: widgets/narratives
+            id: kb_userProfile_narratives
+            type: es6
+        -
+            module: widgets/collaborators
+            id: kb_userProfile_collaborators
+            type: es6
+    routes:
+        -
+            path: ['people', {type: param, name: username}]
+            widget: kb_userProfile_panel
+            authorization: true
+        -
+            path: ['people']
+            widget: kb_userProfile_panel
+            authorization: true
+
