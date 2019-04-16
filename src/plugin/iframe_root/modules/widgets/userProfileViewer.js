@@ -1,9 +1,4 @@
-define([
-    'knockout',
-    'kb_lib/jsonRpc/genericClient',
-    'kb_lib/html',
-    '../components/profileView'
-], function (
+define(['knockout', 'kb_lib/jsonRpc/genericClient', 'kb_lib/html', '../components/profileView'], function (
     ko,
     GenericClient,
     html,
@@ -25,13 +20,12 @@ define([
                 url: runtime.config('services.user_profile.url'),
                 token: runtime.service('session').getAuthToken()
             });
-            return userProfileClient.callFunc('get_user_profile', [[username]])
-                .spread(function (profiles) {
-                    if (profiles.length === 0) {
-                        throw new Error('Profile not found');
-                    }
-                    return profiles[0];
-                });
+            return userProfileClient.callFunc('get_user_profile', [[username]]).spread(function (profiles) {
+                if (profiles.length === 0) {
+                    throw new Error('Profile not found');
+                }
+                return profiles[0];
+            });
         }
 
         // SERVICE API
@@ -54,10 +48,13 @@ define([
                             }
                         }
                     });
-                    ko.applyBindings({
-                        runtime: runtime,
-                        profile: profile
-                    }, container);
+                    ko.applyBindings(
+                        {
+                            runtime: runtime,
+                            profile: profile
+                        },
+                        container
+                    );
                 })
                 .catch(function (err) {
                     console.error('got error', err);
@@ -68,9 +65,7 @@ define([
             return null;
         }
 
-        function detach() {
-
-        }
+        function detach() {}
 
         return {
             attach: attach,

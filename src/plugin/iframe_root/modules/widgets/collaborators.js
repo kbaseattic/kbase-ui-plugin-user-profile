@@ -4,13 +4,7 @@ define([
     'kb_lib/htmlBuilders',
     'kb_lib/htmlBootstrapBuilders',
     '../components/collaborators/main'
-], function (
-    ko,
-    html,
-    build,
-    bootstrapBuilder,
-    CollaboratorsComponent
-) {
+], function (ko, html, build, bootstrapBuilder, CollaboratorsComponent) {
     'use strict';
 
     const t = html.tag,
@@ -31,6 +25,13 @@ define([
 
         render() {
             let title;
+            if (!this.runtime.service('session').isLoggedIn()) {
+                return bootstrapBuilder.buildPanel({
+                    type: 'default',
+                    title: 'Collaborator Network',
+                    body: 'Anonymous users don\'t have collaborators'
+                });
+            }
             if (this.vm.username === this.runtime.service('session').getUsername()) {
                 title = 'Your Collaborator Network';
             } else {
@@ -39,7 +40,7 @@ define([
             return bootstrapBuilder.buildPanel({
                 type: 'default',
                 title: title,
-                body:  div({
+                body: div({
                     dataBind: {
                         component: {
                             name: CollaboratorsComponent.quotedName(),
@@ -60,7 +61,7 @@ define([
             this.container = node.appendChild(document.createElement('div'));
         }
 
-        start({username}) {
+        start({ username }) {
             this.vm.username = username || this.runtime.service('session').getUsername();
             this.container.innerHTML = this.render();
             ko.applyBindings(this.vm, this.container);
@@ -75,7 +76,6 @@ define([
                 this.hostNode.removeChild(this.container);
             }
         }
-
     }
 
     return CollaboratorsWidget;

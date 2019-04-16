@@ -70,16 +70,18 @@ define([
 
             this.orgs = ko.observableArray();
 
-            this.fetchOrgs().then((orgs) => {
-                // @ param {orgs} array of org names
-                const arr = [];
-                orgs.forEach((org) => {
-                    const orgNameUrl = { name: org.name, url: window.location.origin + '/#org/' + org.id };
-                    arr.push(orgNameUrl);
+            if (this.runtime.service('session').getAuthToken()) {
+                this.fetchOrgs().then((orgs) => {
+                    // @ param {orgs} array of org names
+                    const arr = [];
+                    orgs.forEach((org) => {
+                        const orgNameUrl = { name: org.name, url: window.location.origin + '/#org/' + org.id };
+                        arr.push(orgNameUrl);
+                    });
+                    this.orgs(arr);
+                    return null;
                 });
-                this.orgs(arr);
-                return null;
-            });
+            }
         }
 
         /**
@@ -149,12 +151,12 @@ define([
                         'https://www.gravatar.com/avatar/' + gravatarHash + '?s=500&amp;r=pg&d=' + gravatarDefault
                     );
                 } else {
-                    return runtime.pluginResourcePath + '/images/nouserpic.png';
+                    return this.runtime.pluginResourcePath + '/images/nouserpic.png';
                 }
             case 'silhouette':
             case 'mysteryman':
             default:
-                return runtime.pluginResourcePath + '/images/nouserpic.png';
+                return this.runtime.pluginResourcePath + '/images/nouserpic.png';
             }
         }
     }

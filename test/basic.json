@@ -1,0 +1,49 @@
+[
+    {
+        "description": "Ensure main view appears",
+        "specs": [
+            {
+                "description": "shousld have main panel framing appear when hit the path",
+                "baseSelector": [],
+                "tasks": [
+                    {
+                        "title": "login",
+                        "subtask": "login"
+                    },
+
+                    {
+                        "title": "navigate to user profile",
+                        "navigate": {
+                            "path": "people"
+                        }
+                    },
+                    {
+                        "switchToFrame": {
+                            "selector": [
+                                {
+                                    "type": "iframe",
+                                    "value": "plugin-iframe"
+                                }
+                            ],
+                            "wait": 1000
+                        }
+                    },
+                    {
+                        "selector": [
+                            {
+                                "type": "plugin",
+                                "value": "user-profile"
+                            },
+                            {
+                                "type": "field",
+                                "value": "username"
+                            }
+                        ],
+                        "wait": 10000,
+                        "text": "$username"
+                    }
+                ]
+            }
+        ]
+    }
+]

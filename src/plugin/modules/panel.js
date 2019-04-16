@@ -24,6 +24,7 @@ define(['module', './iframer', 'css!./panel.css'], function (module, Iframer) {
             this.container.style.flex = '1 1 0px';
             this.container.style.display = 'flex';
             this.container.style['flex-direction'] = 'column';
+            this.container.setAttribute('data-k-b-testhook-plugin', 'user-profile');
         }
 
         start(params) {
