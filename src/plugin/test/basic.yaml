@@ -1,23 +1,17 @@
 ---
-- description: Ensure main view appears
+- description: Navigate to "people" path for current user
   specs:
-  - description: should have main panel framing appear when hit the path
-    baseSelector: []
-    tasks:
-    - title: login
-      subtask: login
-    - title: navigate to user profile
-      navigate:
-        path: people
-    - switchToFrame:
-        selector:
-        - type: iframe
-          value: plugin-iframe
-        wait: 1000
-    - selector:
-      - type: plugin
-        value: user-profile
-      - type: field
-        value: username
-      wait: 10000
-      text: "${username}"
+    - description: should show the user profile with username populated
+      baseSelector: []
+      tasks:
+        - subtask: login
+        - action: navigate
+          path: people
+        - subtask: plugin
+        - wait: forText
+          selector:
+            - type: plugin
+              value: user-profile
+            - type: field
+              value: username
+          text: ${username}
