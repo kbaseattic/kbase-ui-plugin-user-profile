@@ -1,17 +1,17 @@
 ---
-- description: Navigate to "people" path for current user
-  specs:
-    - description: should show the user profile with username populated
-      baseSelector: []
-      tasks:
-        - subtask: login
-        - action: navigate
-          path: people
-        - subtask: plugin
-        - wait: forText
-          selector:
-            - type: plugin
-              value: user-profile
-            - type: field
-              value: username
-          text: ${username}
+description: Navigate to "people" path for current user
+specs:
+  - description: should show the user profile with username populated
+    baseSelector: []
+    tasks:
+      - subtask: login
+      - action: navigate
+        path: people
+      - subtask: plugin
+      - wait: forText
+        selector:
+          - type: plugin
+            value: user-profile
+          - type: field
+            value: username
+        text: ${username}
