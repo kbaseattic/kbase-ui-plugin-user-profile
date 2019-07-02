@@ -10,5 +10,6 @@
     "dependencies": {},
     "devDependencies": {
         "eslint": "5.15.1"
-    }
+    },
+    "license": "SEE LICENSE IN LICENSE.md"
 }
