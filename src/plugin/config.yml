@@ -15,14 +15,14 @@ install:
           id: kb_plugin_user-profile
           type: es6
     routes:
-        - path: ['people', {type: param, name: username}]
+        - path: [['people', 'user'], {type: param, name: username}]
           queryParams: {}
           params: {
               view: people
           }
           widget: kb_plugin_user-profile
           authorization: false
-        - path: ['people']
+        - path: [['people', 'user']]
           queryParams: {}
           params: {
               view: people
