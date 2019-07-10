@@ -1,3 +1,3 @@
-# PLUGIN TITLE
+# User Profile Plugin
 
-This is a sample readme for a plugin. Please use this space to splain it.
+This kbase-ui plugin is responsible for displaying a user profile - either the current user's profile if the path is `#people` or `#user`, or a given user profile if the path is `#people/USERNAME` or `#user/USERNAME`.

@@ -1,42 +1,31 @@
-## YAML Template.
+## Plugin Configuration
 ---
 package:
-    author: Erik Pearson
+    author: KBase Developer
     name: user-profile
-    description: The user profile panel and associated widgets
-    date: August 5, 2015
-    version: 1.0.0
+    description: The user-profile panel and associated widgets
 source:
+    ## sources are relative to build/plugins/PACKAGE/source/javascript
+    ## NB: need to quote file names, otherwise
+    modules:
+    styles:
 install:
     widgets:
-        -
-            module: panel
-            id: kb_userProfile_panel
-            type: factory
-        -
-            module: widgets/userProfileViewer
-            id: kb_userProfile_profileViewer
-            type: factory
-        -
-            module: widgets/userSearch
-            id: kb_userProfile_userSearch
-            css: true
-            type: factory
-        -
-            module: widgets/narratives
-            id: kb_userProfile_narratives
-            type: es6
-        -
-            module: widgets/collaborators
-            id: kb_userProfile_collaborators
-            type: es6
+        - module: ./panel
+          id: kb_plugin_user-profile
+          type: es6
     routes:
-        -
-            path: ['people', {type: param, name: username}]
-            widget: kb_userProfile_panel
-            authorization: true
-        -
-            path: ['people']
-            widget: kb_userProfile_panel
-            authorization: true
-
+        - path: [['people', 'user'], {type: param, name: username}]
+          queryParams: {}
+          params: {
+              view: people
+          }
+          widget: kb_plugin_user-profile
+          authorization: false
+        - path: [['people', 'user']]
+          queryParams: {}
+          params: {
+              view: people
+          }
+          widget: kb_plugin_user-profile
+          authorization: true
